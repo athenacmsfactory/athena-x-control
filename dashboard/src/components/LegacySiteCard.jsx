@@ -89,6 +89,24 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
         >
           ✨ ATHENIFY
         </button>
+        
+        <button 
+          onClick={async () => {
+            if (confirm(`Wil je ${site.name} weer activeren in de Werkplaats?`)) {
+              addToast(`Activeren van ${site.name}...`, 'info');
+              const res = await ApiService.unparkSite(site.name);
+              if (res.success) {
+                addToast(`Site ${site.name} is weer actief!`, 'success');
+                onRefresh();
+              } else {
+                addToast(`Fout bij activeren: ${res.error}`, 'error');
+              }
+            }
+          }}
+          className={btnClass}
+        >
+          🛠️ UNPARK
+        </button>
 
         <button 
           onClick={handleStop}

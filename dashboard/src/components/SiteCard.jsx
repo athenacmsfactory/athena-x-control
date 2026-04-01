@@ -161,10 +161,25 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
         />
         <ActionButton 
           icon="🚀" 
- 
           label="DEPLOY" 
           highlight={true}
           onClick={handleDeploy}
+        />
+        <ActionButton 
+          icon="📦" 
+          label="PARK" 
+          onClick={async () => {
+            if (confirm(`Wil je ${site.name} parkeren in de Vault?`)) {
+              addToast(`Parkeren van ${site.name}...`, 'info');
+              const res = await ApiService.parkSite(site.name);
+              if (res.success) {
+                addToast(`Site ${site.name} geparkeerd.`, 'success');
+                onRefresh();
+              } else {
+                addToast(`Fout: ${res.error}`, 'error');
+              }
+            }
+          }}
         />
       </div>
     </div>
