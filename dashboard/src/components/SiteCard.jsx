@@ -120,6 +120,7 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
         <ActionButton 
           icon={isRunning ? "↗️" : (isHydrating ? "⏳" : "▶️")} 
           label={isRunning ? "OPEN" : (isHydrating ? "WAIT" : "DEV")} 
+          title={isRunning ? "Open de actieve site op de toegewezen poort." : "Start de Vite development server voor deze site."}
           onClick={isRunning ? () => window.open(activeServer.url, '_blank') : handleStartDev}
           active={isRunning || isHydrating}
           disabled={isHydrating}
@@ -127,11 +128,13 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
         <ActionButton 
           icon="⚓" 
           label="DOCK" 
+          title="Open de lokale preview in de Athena Dock."
           onClick={() => ApiService.startDock().then(() => window.open(`http://localhost:5002?site=${site.name}`, '_blank'))}
         />
         <ActionButton 
           icon={isInstalled ? "🌵" : "💧"} 
           label={isInstalled ? "DRY" : "WET"} 
+          title={isInstalled ? "Site is 'Wet' (node_modules aanwezig). Klik om te verwijderen (DRY)." : "Site is 'Dry' (geen node_modules). Klik om te installeren (WET)."}
           onClick={isInstalled ? handleDehydrate : handleHydrate}
           disabled={isRunning || isHydrating}
           danger={isInstalled}
@@ -139,6 +142,7 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
         <ActionButton 
           icon="🛑" 
           label="STOP" 
+          title="Stop de actieve server voor deze site."
           onClick={handleStopDev}
           disabled={!isRunning}
           danger={true}
@@ -147,33 +151,53 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
         <ActionButton 
           icon="📊" 
           label="SEO" 
+          title="Voer een audit uit op performance, SEO en best-practices."
           onClick={() => onSEO(site.name)}
         />
         <ActionButton 
           icon="📝" 
           label="SHEET" 
+          title="Open de gekoppelde Google Sheet voor data-beheer."
           onClick={() => onSheet(site)}
         />
         <ActionButton 
           icon="🖼️" 
           label="MEDIA" 
+          title="Beheer afbeeldingen en downloads in de Media Manager."
           onClick={() => ApiService.startMediaServer(site.name).then(() => window.open(`http://localhost:5004`, '_blank'))}
         />
         <ActionButton 
           icon="🚀" 
           label="DEPLOY" 
+          title="Publiceer je wijzigingen naar de live-website op GitHub."
           highlight={true}
           onClick={handleDeploy}
         />
         <ActionButton 
           icon="📦" 
-          label="PARK" 
+          label="ARCHIVE" 
+          title="Maak een kopie van deze site naar de Vault voor veilige opslag."
           onClick={async () => {
-            if (confirm(`Wil je ${site.name} parkeren in de Vault?`)) {
-              addToast(`Parkeren van ${site.name}...`, 'info');
-              const res = await ApiService.parkSite(site.name);
+            addToast(`Archiveren van ${site.name} naar Vault...`, 'info');
+            const res = await ApiService.parkSite(site.name);
+            if (res.success) {
+              addToast(`Site ${site.name} gearchiveerd.`, 'success');
+              onRefresh();
+            } else {
+              addToast(`Fout: ${res.error}`, 'error');
+            }
+          }}
+        />
+        <ActionButton 
+          icon="🗑️" 
+          label="DELETE" 
+          title="Verwijder deze site DEFINITIEF uit de actieve Werkplaats."
+          onClick={async () => {
+            if (confirm(`LET OP: Wil je ${site.name} DEFINITIEF verwijderen uit de Werkplaats?`)) {
+              addToast(`Site ${site.name} aan het verwijderen...`, 'info');
+              const res = await ApiService.deleteSite(site.name);
               if (res.success) {
-                addToast(`Site ${site.name} geparkeerd.`, 'success');
+                addToast(`Site ${site.name} verwijderd uit Werkplaats.`, 'success');
                 onRefresh();
               } else {
                 addToast(`Fout: ${res.error}`, 'error');
@@ -199,11 +223,12 @@ function Badge({ type, label }) {
   );
 }
 
-function ActionButton({ icon, label, onClick, active, disabled, danger, highlight }) {
+function ActionButton({ icon, label, onClick, active, disabled, danger, highlight, title }) {
   return (
     <button 
       onClick={onClick}
       disabled={disabled}
+      title={title}
       className={`flex flex-col items-center justify-center gap-1 p-1.5 rounded-sm border text-[8px] font-black uppercase tracking-tighter transition-all
         ${disabled ? 'opacity-20 cursor-not-allowed bg-black/20 border-slate-800' : 
           active ? 'bg-emerald-500 text-white border-emerald-400 shadow-lg shadow-emerald-900/20' : 

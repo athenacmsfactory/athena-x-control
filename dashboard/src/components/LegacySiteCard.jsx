@@ -72,6 +72,7 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
         <button 
           onClick={isRunning ? () => window.open(activeServer.url, '_blank') : (isStatic ? () => window.open(site.localUrl, '_blank') : handleStart)}
           className={isRunning ? activeBtnClass : btnClass}
+          title={isRunning ? "Open de actieve site in een nieuw tabblad" : (isStatic ? "Bekijk de statische site" : "Start de development server")}
         >
           {isRunning ? '↗️ OPEN' : (isStatic ? '👁️ VIEW' : '▶️ START')}
         </button>
@@ -79,16 +80,20 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
         <button 
           onClick={() => alert(`Map: sites-external/${site.name}`)}
           className={btnClass}
+          title="Open de lokale map van deze site"
         >
           📂 EXPLORE
         </button>
 
-        <button 
-          onClick={handleAthenify}
-          className={btnClass}
-        >
-          ✨ ATHENIFY
-        </button>
+        {!site.isAthena && (
+          <button 
+            onClick={handleAthenify}
+            title="Transformeer dit archief naar een modern Athena v9 project. De AI analyseert de code, extraheert de data naar JSON en maakt de site bewerkbaar via het dashboard."
+            className={btnClass}
+          >
+            ✨ MODERNIZE
+          </button>
+        )}
         
         <button 
           onClick={async () => {
@@ -104,8 +109,27 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
             }
           }}
           className={btnClass}
+          title="Activeer de site opnieuw in de werkplaats"
         >
-          🛠️ UNPARK
+          🚀 ACTIVATE
+        </button>
+
+        <button 
+          onClick={async () => {
+            if (confirm(`LET OP: Wil je ${site.name} DEFINITIEF verwijderen uit de Vault?`)) {
+              addToast(`Archief ${site.name} aan het verwijderen...`, 'info');
+              const res = await ApiService.deleteFromVault(site.name);
+              if (res.success) {
+                addToast(`Archief ${site.name} verwijderd.`, 'success');
+                onRefresh();
+              } else {
+                addToast(`Fout: ${res.error}`, 'error');
+              }
+            }
+          }}
+          className="p-1 text-xs bg-red-900/20 text-red-300 border border-red-500/30 rounded hover:bg-red-900/40 transition-colors uppercase"
+        >
+          🗑️ DELETE
         </button>
 
         <button 

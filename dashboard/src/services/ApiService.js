@@ -30,6 +30,7 @@ export const ApiService = {
   athenifySite: (id) => fetch(`${API_BASE}/sites/${id}/athenify`, { method: 'POST' }).then(res => res.json()),
   parkSite: (id) => fetch(`${API_BASE}/sites/${id}/park`, { method: 'POST' }).then(res => res.json()),
   unparkSite: (id) => fetch(`${API_BASE}/sites/${id}/unpark`, { method: 'POST' }).then(res => res.json()),
+  deleteSite: (id) => fetch(`${API_BASE}/sites/${id}/delete`, { method: 'POST' }).then(res => res.json()),
   stopSiteServer: (port) => fetch(`${API_BASE}/servers/kill/${port}`, { method: 'POST' }).then(res => res.json()),
   stopAllSiteServers: () => fetch(`${API_BASE}/servers/stop-all`, { method: 'POST' }).then(res => res.json()),
   deploy: (projectName, commitMsg) => fetch(`${API_BASE}/deploy`, {
