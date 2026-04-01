@@ -39,7 +39,9 @@ cd "$UI_DIR"
 pnpm dev --port $UI_PORT > "$PROJECT_ROOT/$LOG_FILE_UI" 2>&1 &
 cd "$PROJECT_ROOT"
 
-sleep 3
+echo "⏳ Waiting for servers to initialize (10s)..."
+sleep 10
+
 
 # Open browser
 USER_DATA_DIR="/home/kareltestspecial/.chrome-linux-profile"
