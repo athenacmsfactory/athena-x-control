@@ -175,16 +175,16 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
         />
         <ActionButton 
           icon="📦" 
-          label="ARCHIVE" 
-          title="Maak een kopie van deze site naar de Vault voor veilige opslag."
+          label="PUSH" 
+          title="Archiveer en rsync deze site naar de Vault met het Forklift systeem."
           onClick={async () => {
-            addToast(`Archiveren van ${site.name} naar Vault...`, 'info');
+            addToast(`🚜 Forklift: Pushen van ${site.name} naar Vault...`, 'info');
             const res = await ApiService.parkSite(site.name);
             if (res.success) {
-              addToast(`Site ${site.name} gearchiveerd.`, 'success');
+              addToast(`✅ ${site.name} succesvol gepushed naar Vault.`, 'success');
               onRefresh();
             } else {
-              addToast(`Fout: ${res.error}`, 'error');
+              addToast(`❌ Forklift Error: ${res.error}`, 'error');
             }
           }}
         />
