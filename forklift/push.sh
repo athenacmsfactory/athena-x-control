@@ -29,8 +29,8 @@ if [[ "$SITE_NAME" == *"/"* ]] || [[ "$SITE_NAME" == *".."* ]]; then
     exit 1
 fi
 
-VAULT_PATH="/home/kareltestspecial/0-IT/4-pj/x-v9/sites/$SITE_NAME"
-PLAYGROUND_PATH="/home/kareltestspecial/0-IT/4-pj/x-v9/y/factory/werkplaats/$SITE_NAME"
+VAULT_PATH="/home/kareltestspecial/0-IT/4-pj/x-v9/vault/$SITE_NAME"
+PLAYGROUND_PATH="/home/kareltestspecial/0-IT/4-pj/x-v9/athena/sites/$SITE_NAME"
 
 if [ ! -d "$PLAYGROUND_PATH" ]; then
     echo "❌ Error: Site '$SITE_NAME' not found in Werkplaats ($PLAYGROUND_PATH)."
