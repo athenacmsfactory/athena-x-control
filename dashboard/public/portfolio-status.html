@@ -53,7 +53,13 @@
                 </button>
                 <div class="w-px h-8 bg-slate-700"></div>
                 <div class="flex gap-2">
-                    <button onclick="filterByStatus('all')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors text-slate-300">Alle</button>
+                    <button onclick="filterByLocation('all')" id="loc-all" class="loc-pill px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">ALL</button>
+                    <button onclick="filterByLocation('work')" id="loc-work" class="loc-pill px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors text-slate-300">WORK</button>
+                    <button onclick="filterByLocation('vault')" id="loc-vault" class="loc-pill px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors text-slate-300">VAULT</button>
+                </div>
+                <div class="w-px h-8 bg-slate-700"></div>
+                <div class="flex gap-2">
+                    <button onclick="filterByStatus('all')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors text-slate-300">Alle Status</button>
                     <button onclick="filterByStatus('warning')" class="px-4 py-2 bg-amber-900/30 text-amber-400 hover:bg-amber-900/50 rounded-lg text-sm font-medium transition-colors">Issues</button>
                     <button onclick="filterByStatus('broken')" class="px-4 py-2 bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded-lg text-sm font-medium transition-colors">Broken</button>
                 </div>
@@ -69,6 +75,7 @@
         let allSites = [];
         let activeServers = [];
         let currentFilter = 'all';
+        let currentLoc = 'all';
 
         async function loadData() {
             // 1. Fetch site health data (Essential for the grid)
@@ -181,7 +188,10 @@
                 const isLive = activeServers.some(srv => srv.siteName === s.site);
                 const matchesStatus = currentFilter === 'all' || 
                                      (currentFilter === 'live' ? isLive : s.status === currentFilter);
-                return matchesSearch && matchesStatus;
+                const matchesLoc = currentLoc === 'all' ||
+                                  (currentLoc === 'work' && s.isNative) ||
+                                  (currentLoc === 'vault' && !s.isNative);
+                return matchesSearch && matchesStatus && matchesLoc;
             });
 
             grid.innerHTML = filtered.map(site => {
@@ -195,7 +205,10 @@
                             <h3 class="text-lg font-bold text-white truncate pr-2">${site.site}</h3>
                             ${isLive ? `<span class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Port: ${activeServer.port}</span>` : ''}
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 items-center">
+                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded ${site.isNative ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-slate-700 text-slate-400'}">
+                                ${site.isNative ? 'WORK' : 'VAULT'}
+                            </span>
                             ${isLive ? '<span class="badge bg-blue-600 text-white animate-pulse">Live</span>' : ''}
                             <span class="badge badge-${site.status}">${site.status}</span>
                         </div>
@@ -327,6 +340,21 @@
 
         function filterSites() { renderSites(); }
         function filterByStatus(status) { currentFilter = status; renderSites(); }
+        
+        function filterByLocation(loc) {
+            currentLoc = loc;
+            document.querySelectorAll('.loc-pill').forEach(btn => {
+                const id = btn.id.replace('loc-', '');
+                if (id === loc) {
+                    btn.classList.add('bg-blue-600', 'text-white');
+                    btn.classList.remove('bg-slate-700', 'text-slate-300');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('bg-slate-700', 'text-slate-300');
+                }
+            });
+            renderSites();
+        }
 
         function showToast(msg) {
             const toast = document.getElementById('toast');

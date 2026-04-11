@@ -2,6 +2,8 @@
 const API = window.location.origin + '/api';
 let currentTool = null;
 let systemConfig = null;
+let currentStorageFilter = 'all';
+let allStorageSites = [];
 
 async function loadSystemConfig() {
     try {
@@ -163,42 +165,69 @@ async function loadStorageStatus() {
     const list = document.getElementById('storage-list');
     list.innerHTML = '<p class="loading-msg">📡 Opslag status ophalen...</p>';
 
-    const sites = await fetchJSON('/storage/status') || [];
-    list.innerHTML = '';
+    allStorageSites = await fetchJSON('/storage/status') || [];
+    renderStorageList();
+}
 
+function setStorageFilter(f) {
+    currentStorageFilter = f;
+    document.querySelectorAll('#storage-location-filter .pill').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.toLowerCase() === f.toLowerCase());
+    });
+    renderStorageList();
+}
+
+function filterStorageList() {
+    renderStorageList();
+}
+
+function renderStorageList() {
+    const list = document.getElementById('storage-list');
+    const searchTerm = document.getElementById('storage-search').value.toLowerCase();
+    
+    // Stats update
     const countEl = document.getElementById('storage-count-sites');
     const savableEl = document.getElementById('storage-savable');
     const diskPercentEl = document.getElementById('storage-disk-percent');
     const diskBarEl = document.getElementById('storage-disk-bar');
 
-    countEl.innerText = sites.length;
+    // Filter
+    const filtered = allStorageSites.filter(s => {
+        const matchesSearch = s.site.toLowerCase().includes(searchTerm);
+        const matchesFilter = currentStorageFilter === 'all' || 
+                             (currentStorageFilter === 'work' && s.isNative) || 
+                             (currentStorageFilter === 'vault' && !s.isNative);
+        return matchesSearch && matchesFilter;
+    });
+
+    countEl.innerText = filtered.length;
 
     let totalSavable = 0;
-    sites.forEach(site => {
+    filtered.forEach(site => {
         if (site.policy === 'dormant' && site.hydration === 'hydrated') {
-            totalSavable += (site.storage - 10); // Schatting: node_modules is meestal grootse deel
+            totalSavable += (site.storage - 10); 
         }
     });
     savableEl.innerText = `${totalSavable} MB`;
 
+    list.innerHTML = '';
+
     // System Disk Info
-    try {
-        const sys = await fetchJSON('/system-status');
+    fetchJSON('/system-status').then(sys => {
         if (sys) {
             diskPercentEl.innerText = sys.percent;
             diskBarEl.style.width = sys.percent;
-            // Kleur aanpassen op basis van vulling
             const p = parseInt(sys.percent);
             diskBarEl.style.background = p > 90 ? 'var(--error)' : (p > 70 ? 'var(--warning)' : 'var(--success)');
         }
-    } catch (e) {}
+    }).catch(() => {});
 
-    if (sites.length === 0) {
-        list.innerHTML = '<div style="grid-column: 1/-1; padding: 50px; text-align: center; color: var(--text-muted); opacity: 0.5;">Geen sites gevonden om te beheren.</div>';
+    if (filtered.length === 0) {
+        list.innerHTML = '<div style="grid-column: 1/-1; padding: 50px; text-align: center; color: var(--text-muted); opacity: 0.5;">Geen sites gevonden met huidige filters.</div>';
         return;
     }
 
-    sites.forEach(site => {
+    filtered.forEach(site => {
         const isHydrated = site.hydration === 'hydrated';
         const isDormant = site.hydration === 'dormant';
         const needsAction = (site.policy === 'dormant' && isHydrated) || (site.policy === 'hydrated' && isDormant);
@@ -214,9 +243,14 @@ async function loadStorageStatus() {
                         <i class="fa-solid fa-hard-drive" style="font-size:1.2rem; color: ${isHydrated ? 'var(--success)' : 'var(--text-muted)'};"></i>
                         <h4 style="font-weight:700; letter-spacing:0.5px; font-size:1.05rem;">${site.site}</h4>
                     </div>
-                    <span class="badge ${isHydrated ? 'badge-live' : 'badge-local'}">
-                        ${isHydrated ? 'HYDRATED' : 'DORMANT'}
-                    </span>
+                    <div style="display:flex; gap:5px;">
+                        <span class="badge ${site.isNative ? 'badge-live' : 'badge-local'}" style="width: auto; padding: 2px 5px; font-size: 0.5rem; opacity: 0.8;">
+                             ${site.isNative ? 'WORK' : 'VAULT'}
+                        </span>
+                        <span class="badge ${isHydrated ? 'badge-live' : 'badge-local'}">
+                            ${isHydrated ? 'HYDRATED' : 'DORMANT'}
+                        </span>
+                    </div>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; margin-top:10px;">

@@ -27,51 +27,70 @@ export default function RepositoriesView() {
     return date.toLocaleDateString('nl-BE');
   }
 
+  const reposByOwner = repos.reduce((acc, repo) => {
+    const owner = repo.owner || 'Other';
+    if (!acc[owner]) acc[owner] = [];
+    acc[owner].push(repo);
+    return acc;
+  }, {});
+
+  const sortedOwners = Object.keys(reposByOwner).sort();
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-10">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard label="Totaal Remote" value={repos.length} />
         <StatCard label="Live Pages" value={repos.filter(r => !r.isPrivate).length} color="text-emerald-500" />
         <StatCard label="Private Assets" value={repos.filter(r => r.isPrivate).length} color="text-athena-accent" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {repos.map((repo, idx) => (
-          <div key={idx} className={`bg-athena-panel p-4 rounded-sm border border-athena-border flex flex-col gap-4 group transition-all hover:border-athena-accent ${!repo.isPrivate ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-slate-700'}`}>
-            <div className="flex justify-between items-start">
-               <div className="flex items-center gap-2">
-                  <span className="text-lg">🐙</span>
-                  <h4 className="font-bold text-white tracking-tight group-hover:text-athena-accent transition-colors truncate max-w-[120px]" title={repo.name}>{repo.name}</h4>
-               </div>
-               <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-sm border uppercase ${repo.isPrivate ? 'bg-slate-800 text-slate-500 border-slate-700' : 'bg-emerald-500/5 text-emerald-500 border-emerald-500/30'}`}>
-                  {repo.isPrivate ? 'PRIV' : 'LIVE'}
-               </span>
-            </div>
-
-            <div className="space-y-1.5 text-[11px] text-slate-500 font-medium">
-               <p className="flex items-center gap-2">
-                  <span className="opacity-30">🕒</span> {getTimeAgo(repo.updatedAt)}
-               </p>
-               {!repo.isPrivate && (
-                  <p className="text-emerald-600/80 flex items-center gap-2 text-[10px] font-bold uppercase tracking-tighter">
-                     <span>✓</span> Pages Active
-                  </p>
-               )}
-            </div>
-
-            <div className="flex gap-1.5 pt-3 border-t border-athena-border/50 mt-auto">
-               <a href={repo.url} target="_blank" className="flex-1 bg-[#21262d] border border-athena-border text-slate-400 text-[9px] font-black uppercase py-1.5 rounded text-center hover:text-white transition-colors">
-                  REPO
-               </a>
-               {!repo.isPrivate && (
-                  <a href={`https://${repo.owner}.github.io/${repo.name}/`} target="_blank" className="flex-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[9px] font-black uppercase py-1.5 rounded text-center hover:bg-emerald-500 hover:text-white transition-all">
-                     LIVE
-                  </a>
-               )}
-            </div>
+      {sortedOwners.map(owner => (
+        <div key={owner} className="space-y-4">
+          <div className="flex items-center gap-3 border-b border-athena-border/50 pb-2">
+            <span className="text-xl">🏢</span>
+            <h3 className="text-sm font-black text-white uppercase tracking-widest">{owner}</h3>
+            <span className="bg-athena-panel border border-athena-border px-2 py-0.5 rounded text-[10px] font-bold text-slate-500">{reposByOwner[owner].length} REPOS</span>
           </div>
-        ))}
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {reposByOwner[owner].sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)).map((repo, idx) => (
+              <div key={idx} className={`bg-athena-panel p-4 rounded-sm border border-athena-border flex flex-col gap-4 group transition-all hover:border-athena-accent ${!repo.isPrivate ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-slate-700'}`}>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🐙</span>
+                    <h4 className="font-bold text-white tracking-tight group-hover:text-athena-accent transition-colors truncate max-w-[120px]" title={repo.name}>{repo.name}</h4>
+                  </div>
+                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-sm border uppercase ${repo.isPrivate ? 'bg-slate-800 text-slate-500 border-slate-700' : 'bg-emerald-500/5 text-emerald-500 border-emerald-500/30'}`}>
+                    {repo.isPrivate ? 'PRIV' : 'LIVE'}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 text-[11px] text-slate-500 font-medium">
+                  <p className="flex items-center gap-2">
+                    <span className="opacity-30">🕒</span> {getTimeAgo(repo.updatedAt)}
+                  </p>
+                  {!repo.isPrivate && (
+                    <p className="text-emerald-600/80 flex items-center gap-2 text-[10px] font-bold uppercase tracking-tighter">
+                      <span>✓</span> Pages Active
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex gap-1.5 pt-3 border-t border-athena-border/50 mt-auto">
+                  <a href={repo.url} target="_blank" className="flex-1 bg-[#21262d] border border-athena-border text-slate-400 text-[9px] font-black uppercase py-1.5 rounded text-center hover:text-white transition-colors">
+                    REPO
+                  </a>
+                  {!repo.isPrivate && (
+                    <a href={`https://${repo.owner}.github.io/${repo.name}/`} target="_blank" className="flex-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[9px] font-black uppercase py-1.5 rounded text-center hover:bg-emerald-500 hover:text-white transition-all">
+                      LIVE
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

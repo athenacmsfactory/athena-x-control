@@ -119,7 +119,6 @@ function App() {
              <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest px-3 mb-2">Snelle Tools</p>
              <NavBtn label="Athena Dock" icon="⚓" onClick={() => startTool('Dock', 'http://localhost:5002')} />
              <NavBtn label="Portfolio Health" icon="🏥" onClick={() => window.open('/portfolio-status.html', '_blank')} />
-             <NavBtn label="Analytics" icon="📈" onClick={() => window.open('/conversion-analytics.html', '_blank')} />
              <NavBtn label="Reviewer" icon="⚖️" onClick={() => window.open('http://localhost:5001/reviewer.html', '_blank')} />
              <NavBtn label="Layout Editor" icon="🎨" onClick={() => startTool('Layout Editor', 'http://localhost:5003')} />
           </div>

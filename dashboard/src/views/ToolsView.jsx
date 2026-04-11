@@ -8,7 +8,6 @@ export default function ToolsView() {
     {
       title: "Content & Media",
       tools: [
-        { id: 'update-all-heros', label: "Update All Heros", desc: "Batch update hero secties voor alle sites.", icon: "🖼️" },
         { id: 'logo-fixer', label: "Logo Fixer", desc: "Optimaliseer header logo's voor transparantie.", icon: "🎨" },
         { id: 'image-optimizer', label: "Media Optimizer", desc: "Comprimeer afbeeldingen in de hele fabriek.", icon: "⚡" },
       ]

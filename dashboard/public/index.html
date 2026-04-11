@@ -608,12 +608,23 @@
                 </div>
 
                 <div class="section-header">
-                    <h3>Hydration Management</h3>
+                    <div class="flex-row" style="gap: 15px; align-items: center;">
+                        <h3>Hydration Management</h3>
+                        <div class="filter-pills" id="storage-location-filter" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 2px;">
+                            <button class="pill active" onclick="setStorageFilter('all')" style="font-size: 0.6rem; padding: 4px 10px;">ALL</button>
+                            <button class="pill" onclick="setStorageFilter('work')" style="font-size: 0.6rem; padding: 4px 10px;">WORK</button>
+                            <button class="pill" onclick="setStorageFilter('vault')" style="font-size: 0.6rem; padding: 4px 10px;">VAULT</button>
+                        </div>
+                    </div>
                     <div class="flex-row" style="gap: 10px;">
-                        <button onclick="pruneAllDormant()" class="primary-btn danger-btn" style="background: var(--error);">
+                        <div class="search-box">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" id="storage-search" placeholder="Site zoeken..." onkeyup="filterStorageList()">
+                        </div>
+                        <button onclick="pruneAllDormant()" class="primary-btn danger-btn" style="background: var(--error); padding: 4px 12px; font-size: 0.7rem;">
                             <i class="fa-solid fa-broom"></i> Prune All Dormant
                         </button>
-                        <button onclick="loadStorageStatus()" class="secondary-btn">
+                        <button onclick="loadStorageStatus()" class="secondary-btn" style="padding: 4px 12px; font-size: 0.7rem;">
                             <i class="fa-solid fa-sync"></i> Refresh
                         </button>
                     </div>

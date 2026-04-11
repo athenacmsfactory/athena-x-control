@@ -7,6 +7,8 @@ export default function StorageView() {
   const [storageData, setStorageData] = useState([])
   const [systemStatus, setSystemStatus] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [currentLoc, setCurrentLoc] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     refresh()
@@ -38,7 +40,15 @@ export default function StorageView() {
     } catch (e) { addToast("Netwerkfout.", "error") }
   }
 
-  const totalSavable = storageData
+  const filteredData = storageData.filter(s => {
+    const matchesLoc = currentLoc === 'all' || 
+                      (currentLoc === 'work' && s.isNative) || 
+                      (currentLoc === 'vault' && !s.isNative);
+    const matchesSearch = s.site.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesLoc && matchesSearch;
+  });
+
+  const totalSavable = filteredData
     .filter(s => s.policy === 'dormant' && s.hydration === 'hydrated')
     .reduce((acc, s) => acc + (s.storage - 10), 0)
 
@@ -73,6 +83,29 @@ export default function StorageView() {
         </button>
       </div>
 
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex bg-athena-panel border border-athena-border p-1 rounded-sm gap-1">
+          {['all', 'work', 'vault'].map(loc => (
+            <button
+              key={loc}
+              onClick={() => setCurrentLoc(loc)}
+              className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all ${currentLoc === loc ? 'bg-athena-accent text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+            >
+              {loc}
+            </button>
+          ))}
+        </div>
+        <div className="relative w-full md:w-64">
+           <input 
+             type="text" 
+             placeholder="Zoek site..."
+             value={searchTerm}
+             onChange={(e) => setSearchTerm(e.target.value)}
+             className="w-full bg-black/40 border border-athena-border rounded-sm px-4 py-2 text-xs font-bold text-slate-300 placeholder-slate-600 outline-none focus:border-athena-accent"
+           />
+        </div>
+      </div>
+
       <div className="bg-athena-panel border border-athena-border rounded-sm overflow-hidden">
         <table className="w-full text-left text-[12px]">
           <thead className="bg-black/20 border-b border-athena-border">
@@ -85,11 +118,18 @@ export default function StorageView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-athena-border/30">
-            {storageData.map((site, idx) => {
+            {filteredData.length > 0 ? filteredData.map((site, idx) => {
               const needsAction = (site.policy === 'dormant' && site.hydration === 'hydrated');
               return (
                 <tr key={idx} className={`hover:bg-white/5 transition-colors ${needsAction ? 'bg-amber-500/5' : ''}`}>
-                  <td className="px-5 py-3 font-bold text-slate-300">{site.site}</td>
+                  <td className="px-5 py-3 font-bold text-slate-300">
+                    <div className="flex flex-col">
+                      <span>{site.site}</span>
+                      <span className={`text-[8px] font-black uppercase ${site.isNative ? 'text-blue-500/80' : 'text-slate-600'}`}>
+                        {site.isNative ? 'Workshop' : 'Vault'}
+                      </span>
+                    </div>
+                  </td>
                   <td className="px-5 py-3">
                     <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-sm border uppercase ${site.hydration === 'hydrated' ? 'text-emerald-500 border-emerald-500/30 bg-emerald-500/5' : 'text-slate-500 border-athena-border bg-slate-800'}`}>
                       {site.hydration}
@@ -116,7 +156,11 @@ export default function StorageView() {
                   </td>
                 </tr>
               )
-            })}
+            }) : (
+              <tr>
+                <td colSpan="5" className="px-5 py-10 text-center text-slate-600 italic">Geen sites gevonden voor deze selectie.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
