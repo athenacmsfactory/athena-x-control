@@ -12,6 +12,7 @@ import SiteTypesView from './views/SiteTypesView'
 import TodoView from './views/TodoView'
 import SettingsView from './views/SettingsView'
 import ToolsView from './views/ToolsView'
+import WizardView from './views/WizardView'
 import GeneratorModal from './components/GeneratorModal'
 import MarketingModal from './components/MarketingModal'
 import BlogModal from './components/BlogModal'
@@ -67,6 +68,27 @@ function App() {
     }
   }
 
+  const handleVaultDeploy = async () => {
+    const msg = prompt("Commit bericht voor deze Vault release:", "Batch update via Vault Monorepo");
+    if (!msg) return;
+    
+    // We gebruiken 'vault-sync' als een generieke ID voor het script
+    setLoading(true);
+    addToast("v9 Monorepo deployment gestart...", "info");
+    try {
+      const res = await ApiService.deploy('vault-sync', msg);
+      if (res.success) {
+        addToast("Vault succesvol gepushed naar GitHub!", "success");
+      } else {
+        addToast(`Fout bij deploy: ${res.message || 'Onbekende fout'}`, "error");
+      }
+    } catch (e) {
+      addToast(`Fout bij deployment: ${e.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const copySiteNames = () => {
     const names = sites.map(s => s.name).join('\n')
     navigator.clipboard.writeText(names)
@@ -99,6 +121,7 @@ function App() {
         </div>
         
         <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto mt-2 custom-scrollbar">
+          <NavBtn id="wizard" label="Architect Wizard" icon="🧙‍♂️" active={currentView === 'wizard'} onClick={() => setCurrentView('wizard')} className="bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500/10 border-emerald-500/20" />
           <NavBtn id="sites" label="Sites" icon="🌐" active={currentView === 'sites'} onClick={() => setCurrentView('sites')} />
           <NavBtn id="projects" label="Data Hub" icon="📁" active={currentView === 'projects'} onClick={() => setCurrentView('projects')} />
           <NavBtn id="sitetypes" label="SiteTypes" icon="🧩" active={currentView === 'sitetypes'} onClick={() => setCurrentView('sitetypes')} />
@@ -178,18 +201,21 @@ function App() {
             )}
             <button 
               onClick={copySiteNames}
+              data-tooltip="Kopieer alle sitenamen naar klembord"
               className="px-3 py-1.5 text-[11px] font-bold bg-[#21262d] border border-athena-border text-slate-400 hover:text-athena-accent rounded transition-colors"
             >
               COPY NAMES
             </button>
              <button 
               onClick={refreshData}
+              data-tooltip="Ververs alle data van de server"
               className="px-3 py-1.5 text-[11px] font-bold bg-[#21262d] border border-athena-border text-slate-400 hover:text-athena-accent rounded transition-colors"
             >
               REFRESH
             </button>
             <button 
               onClick={() => setIsGeneratorOpen(true)}
+              data-tooltip="Handmatig een nieuw leeg project aanmaken"
               className="px-3 py-1.5 text-[11px] font-black bg-athena-accent text-white rounded hover:brightness-110 transition-all shadow-lg shadow-blue-900/20 uppercase tracking-widest"
             >
               NIEUWE SITE
@@ -236,10 +262,19 @@ function App() {
                       <>
                         {/* VAULT SITES (EXTERNAL / PARKED) */}
                         <div>
-                          <h3 className="text-[11px] font-black text-amber-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
-                            Athena Vault (Geparkeerd)
-                          </h3>
+                          <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-[11px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                              <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                              Athena Vault (Geparkeerd)
+                            </h3>
+                            <button 
+                              onClick={handleVaultDeploy}
+                              disabled={loading}
+                              className="px-6 py-2 bg-athena-accent text-white text-[10px] font-black uppercase tracking-widest rounded shadow-xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                            >
+                              🚀 DEPLOY MONOREPO (VAULT)
+                            </button>
+                          </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                             {sites.filter(s => !s.isNative).map((site, idx) => (
                               <LegacySiteCard 
@@ -264,6 +299,7 @@ function App() {
             {currentView === 'tools' && <ToolsView />}
             {currentView === 'repositories' && <RepositoriesView />}
             {currentView === 'sitetypes' && <SiteTypesView />}
+            {currentView === 'wizard' && <WizardView />}
             {currentView === 'todo' && <TodoView />}
             {currentView === 'settings' && <SettingsView />}
           </div>

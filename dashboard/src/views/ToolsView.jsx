@@ -6,33 +6,25 @@ export default function ToolsView() {
 
   const toolCategories = [
     {
-      title: "Content & Media",
+      title: "Content & Branding",
       tools: [
-        { id: 'logo-fixer', label: "Logo Fixer", desc: "Optimaliseer header logo's voor transparantie.", icon: "🎨" },
-        { id: 'image-optimizer', label: "Media Optimizer", desc: "Comprimeer afbeeldingen in de hele fabriek.", icon: "⚡" },
+        { id: 'update-all-logos', label: "Logo Standardizer", desc: "Zet alle logo-slots op 'contain' voor betere transparantie.", icon: "🎨" },
+        { id: 'bulk-image-fix', label: "Image Path Fixer", desc: "Herstel gebroken afbeeldingspaden in legacy componenten.", icon: "⚡" },
       ]
     },
     {
-      title: "Deployment & Cloud",
+      title: "Maintenance & Core",
       tools: [
-        { id: 'multiverse-deploy', label: "Multiverse Push", desc: "Push alle wijzigingen naar GitHub remotes.", icon: "🚀" },
-        { id: 'cloudflare-sync', label: "DNS Sync", desc: "Synchroniseer domeinen met Cloudflare API.", icon: "☁️" },
-      ]
-    },
-    {
-      title: "System & Core",
-      tools: [
-        { id: 'storage-audit-deep', label: "Deep Storage Audit", desc: "Grondige schijfruimte analyse per site.", icon: "💾" },
-        { id: 'rebuild-registry', label: "Rebuild Registry", desc: "Herstel de centrale sites.json database.", icon: "🛠️" },
-        { id: 'storage-prune', label: "Storage Prune", desc: "Verwijder ongebruikte node_modules en temp data.", icon: "🧹" },
-      ]
-    },
-    {
-      title: "AI & Automation",
-      tools: [
-        { id: 'automatic-showcase-generator', label: "Showcase Gen", desc: "Genereer automatisch portfolio screenshots.", icon: "📸" },
+        { id: 'storage-audit-deep', label: "Deep Storage Audit", desc: "Gedetailleerde analyse van schijfruimte per site.", icon: "💾" },
+        { id: 'storage-prune', label: "Storage Prune", desc: "Dehydrateer sites en ruim pnpm store op.", icon: "🧹" },
         { id: 'nightly-maintenance', label: "Nightly Sync", desc: "Draai alle onderhoudstaken en backups.", icon: "🌙" },
-        { id: 'site-reviewer', label: "AI Site Review", desc: "Laat AI de site checken op fouten en stijl.", icon: "🧐" },
+        { id: 'regenerate-site-passports', label: "Update Site Passports", desc: "Genereer nieuwe README's op basis van V10 standaard.", icon: "📄" },
+      ]
+    },
+    {
+      title: "AI & Generation",
+      tools: [
+        { id: 'automatic-showcase-generator', label: "Showcase Gen", desc: "Genereer automatisch 15 portfolio screenshots met AI.", icon: "📸" },
       ]
     }
   ]
@@ -56,6 +48,7 @@ export default function ToolsView() {
               <div 
                 key={tool.id}
                 onClick={() => runTool(tool.id, tool.label)}
+                data-tooltip={tool.desc}
                 className="bg-athena-panel p-5 border border-athena-border rounded-sm hover:border-athena-accent group cursor-pointer transition-all shadow-sm"
               >
                 <div className="flex items-start gap-4">

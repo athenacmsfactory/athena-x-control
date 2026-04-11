@@ -129,4 +129,29 @@ export const ApiService = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(config)
   }).then(res => res.json()),
+
+  // Architect Wizard Methods
+  generateStructure: (businessDescription) => fetch(`${API_BASE}/sitetype/generate-structure`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ businessDescription })
+  }).then(res => res.json()),
+
+  generateDesign: (businessDescription) => fetch(`${API_BASE}/sitetype/generate-design`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ businessDescription })
+  }).then(res => res.json()),
+
+  createSiteType: (data) => fetch(`${API_BASE}/sitetype/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(res => res.json()),
+
+  createSiteFromWizard: (data) => fetch(`${API_BASE}/projects/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(res => res.json()),
 };

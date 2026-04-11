@@ -72,22 +72,7 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
     }
   };
 
-  const handleDeploy = async () => {
-    const msg = prompt("Commit bericht voor deze release:", "Update site content via Athena Dashboard");
-    if (!msg) return;
 
-    try {
-      addToast(`Deployment van ${site.name} gestart...`, 'info');
-      const res = await ApiService.deploy(site.name, msg);
-      if (res.success) {
-        addToast(`Deployment geslaagd! Site is onderweg naar GitHub Pages.`, 'success');
-      } else {
-        addToast(`Fout bij deployment: ${res.message || 'Onbekende fout'}`, 'error');
-      }
-    } catch (e) {
-      addToast(`Fout bij deployment: ${e.message}`, 'error');
-    }
-  };
 
   return (
     <div className={`bg-athena-panel border border-athena-border rounded-sm transition-all flex flex-col min-h-[160px] group relative ${isRunning ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-amber-500'}`}>
@@ -149,12 +134,6 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
         />
 
         <ActionButton 
-          icon="📊" 
-          label="SEO" 
-          title="Voer een audit uit op performance, SEO en best-practices."
-          onClick={() => onSEO(site.name)}
-        />
-        <ActionButton 
           icon="📝" 
           label="SHEET" 
           title="Open de gekoppelde Google Sheet voor data-beheer."
@@ -165,13 +144,6 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
           label="MEDIA" 
           title="Beheer afbeeldingen en downloads in de Media Manager."
           onClick={() => ApiService.startMediaServer(site.name).then(() => window.open(`http://localhost:5004`, '_blank'))}
-        />
-        <ActionButton 
-          icon="🚀" 
-          label="DEPLOY" 
-          title="Publiceer je wijzigingen naar de live-website op GitHub."
-          highlight={true}
-          onClick={handleDeploy}
         />
         <ActionButton 
           icon="📦" 
@@ -228,7 +200,7 @@ function ActionButton({ icon, label, onClick, active, disabled, danger, highligh
     <button 
       onClick={onClick}
       disabled={disabled}
-      title={title}
+      data-tooltip={title}
       className={`flex flex-col items-center justify-center gap-1 p-1.5 rounded-sm border text-[8px] font-black uppercase tracking-tighter transition-all
         ${disabled ? 'opacity-20 cursor-not-allowed bg-black/20 border-slate-800' : 
           active ? 'bg-emerald-500 text-white border-emerald-400 shadow-lg shadow-emerald-900/20' : 

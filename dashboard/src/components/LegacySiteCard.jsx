@@ -39,9 +39,11 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
         addToast("Athenify mislukt: " + res.error, 'error');
       }
     } catch (e) {
-      addToast("Athenify fout: " + e.message, 'error');
+      addToast("Athenify fout: " + e.message, "error");
     }
   };
+
+
 
   // Uniform button style for a cleaner look
   const btnClass = "py-2 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 bg-[#21262d] border border-athena-border text-slate-400 hover:text-white hover:border-slate-500 hover:bg-[#30363d]";
@@ -72,7 +74,7 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
         <button 
           onClick={isRunning ? () => window.open(activeServer.url, '_blank') : (isStatic ? () => window.open(site.localUrl, '_blank') : handleStart)}
           className={isRunning ? activeBtnClass : btnClass}
-          title={isRunning ? "Open de actieve site in een nieuw tabblad" : (isStatic ? "Bekijk de statische site" : "Start de development server")}
+          data-tooltip={isRunning ? "Open de actieve site in een nieuw tabblad" : (isStatic ? "Bekijk de statische site" : "Start de development server")}
         >
           {isRunning ? '↗️ OPEN' : (isStatic ? '👁️ VIEW' : '▶️ START')}
         </button>
@@ -80,7 +82,7 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
         <button 
           onClick={() => alert(`Map: sites-external/${site.name}`)}
           className={btnClass}
-          title="Open de lokale map van deze site"
+          data-tooltip="Open de lokale map van deze site"
         >
           📂 EXPLORE
         </button>
@@ -88,7 +90,7 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
         {!site.isAthena && (
           <button 
             onClick={handleAthenify}
-            title="Transformeer dit archief naar een modern Athena v9 project. De AI analyseert de code, extraheert de data naar JSON en maakt de site bewerkbaar via het dashboard."
+            data-tooltip="Transformeer dit archief naar een modern Athena v9 project. De AI analyseert de code, extraheert de data naar JSON en maakt de site bewerkbaar via het dashboard."
             className={btnClass}
           >
             ✨ MODERNIZE
@@ -109,7 +111,7 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
             }
           }}
           className={btnClass}
-          title="Activeer de site opnieuw in de werkplaats"
+          data-tooltip="Activeer de site opnieuw in de werkplaats"
         >
           🚀 ACTIVATE
         </button>
@@ -136,6 +138,7 @@ export default function LegacySiteCard({ site, activeServer, autoStop, onRefresh
           onClick={handleStop}
           disabled={!isRunning}
           className={`${btnClass} ${!isRunning ? 'opacity-10 grayscale cursor-not-allowed border-transparent' : 'text-rose-500/70 hover:bg-rose-500 hover:text-white'}`}
+          data-tooltip="Stop de actieve server voor deze site"
         >
           🛑 STOP
         </button>
