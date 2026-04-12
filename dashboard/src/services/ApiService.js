@@ -1,6 +1,6 @@
-/**
- * Athena Dashboard API Service (v8.7)
- * Handles communication with athena-api on port 5000 via Vite proxy.
+/** 
+ * Athena Dashboard API Service (v9.2 Robust)
+ * Cache-breaker: 1712880813
  */
 
 const API_BASE = '/api';
@@ -50,13 +50,8 @@ export const ApiService = {
     method: 'POST'
   }).then(res => res.json()),
 
-  pullFromSheet: (id) => fetch(`${API_BASE}/sites/${id}/pull-from-sheet`, {
-    method: 'POST'
-  }).then(res => res.json()),
-
-  pushToSheet: (id) => fetch(`${API_BASE}/sites/${id}/sync-to-sheet`, {
-    method: 'POST'
-  }).then(res => res.json()),
+  pullFromSheet: (id) => fetch(`${API_BASE}/sites/${id}/pull-from-sheet`, { method: 'POST' }).then(res => res.json()),
+  pushToSheet: (id) => fetch(`${API_BASE}/sites/${id}/sync-to-sheet`, { method: 'POST' }).then(res => res.json()),
 
   // Site Actions
   getThemeInfo: (id) => fetch(`${API_BASE}/sites/${id}/theme-info`).then(res => res.json()),
@@ -76,9 +71,6 @@ export const ApiService = {
     body: JSON.stringify({ projectName, topic })
   }).then(res => res.json()),
 
-  // Data Gateway
-  pullFromSheet: (id) => fetch(`${API_BASE}/sites/${id}/pull-from-sheet`, { method: 'POST' }).then(res => res.json()),
-  pushToSheet: (id) => fetch(`${API_BASE}/sites/${id}/sync-to-sheet`, { method: 'POST' }).then(res => res.json()),
   // Servers
   getActiveServers: () => fetch(`${API_BASE}/servers/active`).then(res => res.json()),
 
@@ -95,6 +87,24 @@ export const ApiService = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ script, args })
+  }).then(res => res.json()),
+  
+  openInIde: (file) => fetch(`${API_BASE}/tools/open-ide`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file })
+  }).then(res => res.json()),
+
+  readFile: (file) => fetch(`${API_BASE}/tools/read-file`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file })
+  }).then(res => res.json()),
+
+  writeFile: (file, content) => fetch(`${API_BASE}/tools/write-file`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file, content })
   }).then(res => res.json()),
 
   startDock: () => fetch(`${API_BASE}/start-dock`, { method: 'POST' }).then(res => res.json()),
@@ -130,7 +140,7 @@ export const ApiService = {
     body: JSON.stringify(config)
   }).then(res => res.json()),
 
-  // Architect Wizard Methods
+  // Architect Wizard / Blueprints
   generateStructure: (businessDescription) => fetch(`${API_BASE}/sitetype/generate-structure`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -142,6 +152,12 @@ export const ApiService = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ businessDescription })
   }).then(res => res.json()),
+
+  getSiteTypeExisting: () => fetch(`${API_BASE}/sitetype/existing`).then(res => res.json()),
+  
+  getSitetypePreviews: () => fetch(`${API_BASE}/sitetype/previews`).then(res => res.json()),
+  provisionSitetypePreview: (name) => fetch(`${API_BASE}/sitetype/${name}/provision`, { method: 'POST' }).then(res => res.json()),
+  startSitetypePreview: (name) => fetch(`${API_BASE}/sitetype/${name}/preview`, { method: 'POST' }).then(res => res.json()),
 
   createSiteType: (data) => fetch(`${API_BASE}/sitetype/create`, {
     method: 'POST',
