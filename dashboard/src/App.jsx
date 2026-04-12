@@ -12,7 +12,9 @@ import SiteTypesView from './views/SiteTypesView'
 import TodoView from './views/TodoView'
 import SettingsView from './views/SettingsView'
 import ToolsView from './views/ToolsView'
+import LegoView from './views/LegoView'
 import WizardView from './views/WizardView'
+import SitetypePreviewsView from './views/SitetypePreviewsView'
 import GeneratorModal from './components/GeneratorModal'
 import MarketingModal from './components/MarketingModal'
 import BlogModal from './components/BlogModal'
@@ -122,7 +124,9 @@ function App() {
         
         <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto mt-2 custom-scrollbar">
           <NavBtn id="wizard" label="Architect Wizard" icon="🧙‍♂️" active={currentView === 'wizard'} onClick={() => setCurrentView('wizard')} className="bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500/10 border-emerald-500/20" />
+          <NavBtn id="legos" label="Lego Library" icon="🧱" active={currentView === 'legos'} onClick={() => setCurrentView('legos')} />
           <NavBtn id="sites" label="Sites" icon="🌐" active={currentView === 'sites'} onClick={() => setCurrentView('sites')} />
+          <NavBtn id="sitetype-previews" label="Sitetype Previews" icon="🧪" active={currentView === 'sitetype-previews'} onClick={() => setCurrentView('sitetype-previews')} className="border-l-2 border-athena-accent" />
           <NavBtn id="projects" label="Data Hub" icon="📁" active={currentView === 'projects'} onClick={() => setCurrentView('projects')} />
           <NavBtn id="sitetypes" label="SiteTypes" icon="🧩" active={currentView === 'sitetypes'} onClick={() => setCurrentView('sitetypes')} />
           
@@ -299,6 +303,8 @@ function App() {
             {currentView === 'tools' && <ToolsView />}
             {currentView === 'repositories' && <RepositoriesView />}
             {currentView === 'sitetypes' && <SiteTypesView />}
+            {currentView === 'sitetype-previews' && <SitetypePreviewsView />}
+            {currentView === 'legos' && <LegoView />}
             {currentView === 'wizard' && <WizardView />}
             {currentView === 'todo' && <TodoView />}
             {currentView === 'settings' && <SettingsView />}
@@ -314,13 +320,13 @@ function App() {
   )
 }
 
-function NavBtn({ label, icon, active, onClick }) {
+function NavBtn({ label, icon, active, onClick, className = "" }) {
   return (
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded transition-all text-left group ${
         active ? 'bg-[#21262d] text-athena-accent border border-athena-border shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-white'
-      }`}
+      } ${className}`}
     >
       <span className={`text-sm ${active ? 'opacity-100' : 'opacity-50 group-hover:opacity-100'}`}>{icon}</span>
       <span className="text-[12.5px] font-medium">{label}</span>

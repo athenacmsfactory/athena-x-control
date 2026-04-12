@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react'
 import { ApiService } from '../services/ApiService'
+import { useToast } from '../services/ToastContext'
+import BlueprintModal from '../components/BlueprintModal'
 
 export default function SiteTypesView() {
+  const { addToast } = useToast()
   const [siteTypes, setSiteTypes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedBlueprint, setSelectedBlueprint] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     refresh()
@@ -12,11 +17,51 @@ export default function SiteTypesView() {
   const refresh = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/sitetypes');
-      const data = await res.json();
-      setSiteTypes(data || [])
-    } catch (e) { console.error("SiteTypes fetch failed") }
+      const data = await ApiService.getSiteTypeExisting();
+      setSiteTypes(data.sitetypes || [])
+    } catch (e) {
+      console.error("SiteTypes fetch failed", e);
+      addToast("Kon blueprint registry niet laden.", "error");
+    }
     setLoading(false)
+  }
+
+  const handleBuild = async (type) => {
+    const name = prompt(`Geef een naam voor de nieuwe ${type.name} site:`, `${type.name}-instance`);
+    if (!name) return;
+
+    try {
+      addToast(`Bezig met genereren van ${name} op basis van ${type.name}...`, 'info');
+      const res = await fetch('/api/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.toLowerCase().replace(/\s+/g, '-'),
+          description: `Instantie van ${type.name} blueprint.`,
+          siteType: type.name
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast(`✅ Site ${name} succesvol aangemaakt!`, 'success');
+        // Optioneel: redirect naar projects of refresh sites
+      } else {
+        addToast(`❌ Fout: ${data.error || 'Onbekende fout'}`, 'error');
+      }
+    } catch (e) {
+      addToast(`❌ Netwerkfout: ${e.message}`, 'error');
+    }
+  }
+
+  const handlePreview = (type) => {
+    setSelectedBlueprint(type)
+    setIsModalOpen(true)
+  }
+
+  const handleEdit = (type) => {
+    addToast("Blueprint editor wordt geopend...", "info");
+    // To-be implemented: Open blueprint JSON editor of Layout Editor
+    window.open(`http://localhost:5003?blueprint=${type.name}`, '_blank');
   }
 
   return (
@@ -36,7 +81,7 @@ export default function SiteTypesView() {
         {siteTypes.map((type, idx) => {
           const isDocked = type.track === 'docked';
           return (
-            <div key={idx} className={`bg-athena-panel p-5 rounded-sm border border-athena-border flex flex-col gap-4 relative overflow-hidden group hover:border-athena-accent transition-all ${isDocked ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-athena-accent'}`}>
+            <div key={idx} className={`bg-athena-panel p-5 rounded-sm border border-athena-border flex flex-col gap-4 relative group hover:border-athena-accent transition-all ${isDocked ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-athena-accent'}`}>
                <div className="flex items-center gap-3">
                   <span className="text-xl">{isDocked ? '⚓' : '🚀'}</span>
                   <h4 className="font-bold text-white text-[13px] uppercase tracking-tight group-hover:text-athena-accent transition-colors">{type.name.replace(/-/g, ' ')}</h4>
@@ -58,10 +103,25 @@ export default function SiteTypesView() {
                </div>
 
                <div className="flex gap-1.5 mt-auto">
-                  <button className="flex-1 py-1.5 bg-[#21262d] border border-athena-border text-slate-400 text-[9px] font-black uppercase rounded hover:text-white transition-colors">
+                  <button 
+                    onClick={() => handleBuild(type)}
+                    className="flex-1 py-1.5 bg-[#21262d] border border-athena-border text-slate-400 text-[9px] font-black uppercase rounded hover:text-white transition-colors"
+                    data-tooltip="Genereer een nieuwe site instantie op basis van deze blueprint"
+                  >
                      BUILD SITE
                   </button>
-                  <button className="px-2.5 py-1.5 bg-black/20 text-slate-500 border border-athena-border/50 rounded hover:text-athena-accent transition-colors">
+                  <button 
+                    onClick={() => handlePreview(type)}
+                    className="px-2.5 py-1.5 bg-black/20 text-slate-500 border border-athena-border/50 rounded hover:text-athena-accent transition-colors"
+                    data-tooltip="Bekijk WYSIWYG preview van deze blueprint"
+                  >
+                     👁️
+                  </button>
+                  <button 
+                    onClick={() => handleEdit(type)}
+                    className="px-2.5 py-1.5 bg-black/20 text-slate-500 border border-athena-border/50 rounded hover:text-athena-accent transition-colors"
+                    data-tooltip="Bewerk blueprint configuratie"
+                  >
                      ✏️
                   </button>
                </div>
@@ -69,6 +129,12 @@ export default function SiteTypesView() {
           )
         })}
       </div>
+
+      <BlueprintModal 
+        blueprint={selectedBlueprint} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   )
 }
