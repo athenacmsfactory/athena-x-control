@@ -44,7 +44,6 @@ export default function SiteTypesView() {
       const data = await res.json();
       if (data.success) {
         addToast(`✅ Site ${name} succesvol aangemaakt!`, 'success');
-        // Optioneel: redirect naar projects of refresh sites
       } else {
         addToast(`❌ Fout: ${data.error || 'Onbekende fout'}`, 'error');
       }
@@ -59,8 +58,6 @@ export default function SiteTypesView() {
   }
 
   const handleEdit = (type) => {
-    addToast("Blueprint editor wordt geopend...", "info");
-    // To-be implemented: Open blueprint JSON editor of Layout Editor
     window.open(`http://localhost:5003?blueprint=${type.name}`, '_blank');
   }
 
@@ -69,7 +66,7 @@ export default function SiteTypesView() {
       <div className="flex justify-between items-center bg-athena-panel p-5 border border-athena-border rounded-sm shadow-sm">
         <div>
           <h3 className="font-bold text-white text-sm uppercase tracking-wider">Blueprints Registry</h3>
-          <p className="text-slate-500 text-[11px] font-medium">Beschikbare architecturen voor nieuwe generaties.</p>
+          <p className="text-slate-500 text-[11px] font-medium uppercase tracking-widest mt-1">Architecture Library</p>
         </div>
         <div className="flex gap-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">
            <div>DOCKED: <span className="text-emerald-500">{siteTypes.filter(t => t.track === 'docked').length}</span></div>
@@ -81,48 +78,49 @@ export default function SiteTypesView() {
         {siteTypes.map((type, idx) => {
           const isDocked = type.track === 'docked';
           return (
-            <div key={idx} className={`bg-athena-panel p-5 rounded-sm border border-athena-border flex flex-col gap-4 relative group hover:border-athena-accent transition-all ${isDocked ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-athena-accent'}`}>
-               <div className="flex items-center gap-3">
-                  <span className="text-xl">{isDocked ? '⚓' : '🚀'}</span>
-                  <h4 className="font-bold text-white text-[13px] uppercase tracking-tight group-hover:text-athena-accent transition-colors">{type.name.replace(/-/g, ' ')}</h4>
+            <div key={idx} className={`bg-athena-panel p-4 rounded-sm border border-athena-border flex flex-col gap-3 group hover:border-athena-accent transition-all ${isDocked ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-athena-accent'}`}>
+               
+               {/* Header Line: Name + Track */}
+               <div className="flex justify-between items-start gap-2">
+                  <h4 className="font-bold text-white text-[12px] uppercase tracking-tight group-hover:text-athena-accent transition-colors truncate">{type.name.replace(/-/g, ' ')}</h4>
+                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-sm border uppercase ${isDocked ? 'text-emerald-500 border-emerald-500/20' : 'text-athena-accent border-athena-accent/20'}`}>
+                    {isDocked ? 'FIX' : 'V10'}
+                  </span>
                </div>
 
-               <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 italic h-8">
-                  {type.description || 'Geen blueprint metadata gevonden.'}
+               {/* Description Line */}
+               <p className="text-[10px] text-slate-500 line-clamp-2 h-7 leading-tight italic">
+                  {type.description || 'Standaard blueprint.'}
                </p>
 
-               <div className="flex gap-2 py-2 border-y border-athena-border/30 bg-black/10 -mx-5 px-5">
-                  <div className="flex-1">
-                     <p className="text-[8px] font-black text-slate-600 uppercase">Tables</p>
-                     <p className="text-[12px] font-black text-slate-400">{type.tableCount || 0}</p>
+               {/* Shared Info Line: Stats + Details */}
+               <div className="flex items-center justify-between py-2 border-y border-athena-border/30 bg-black/10 -mx-4 px-4 mt-auto">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5">
+                       <span className="text-[7px] font-black text-slate-600 uppercase">TBL</span>
+                       <span className="text-[11px] font-black text-slate-400">{type.tableCount || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 border-l border-athena-border/20 pl-4">
+                       <span className="text-[7px] font-black text-slate-600 uppercase">LYT</span>
+                       <span className="text-[11px] font-black text-slate-400">{type.layoutCount || 0}</span>
+                    </div>
                   </div>
-                  <div className="flex-1 border-l border-athena-border/30 pl-3">
-                     <p className="text-[8px] font-black text-slate-600 uppercase">Layouts</p>
-                     <p className="text-[12px] font-black text-slate-400">{type.layoutCount || 0}</p>
-                  </div>
+                  <span className="text-[8px] font-black text-slate-700">PRO READY</span>
                </div>
 
-               <div className="flex gap-1.5 mt-auto">
+               {/* Action Line */}
+               <div className="flex gap-1.5">
                   <button 
                     onClick={() => handleBuild(type)}
                     className="flex-1 py-1.5 bg-[#21262d] border border-athena-border text-slate-400 text-[9px] font-black uppercase rounded hover:text-white transition-colors"
-                    data-tooltip="Genereer een nieuwe site instantie op basis van deze blueprint"
                   >
-                     BUILD SITE
+                     BUILD
                   </button>
                   <button 
                     onClick={() => handlePreview(type)}
-                    className="px-2.5 py-1.5 bg-black/20 text-slate-500 border border-athena-border/50 rounded hover:text-athena-accent transition-colors"
-                    data-tooltip="Bekijk WYSIWYG preview van deze blueprint"
+                    className="px-3 py-1.5 bg-black/20 text-slate-500 border border-athena-border rounded hover:text-athena-accent transition-colors text-[10px] font-black"
                   >
-                     👁️
-                  </button>
-                  <button 
-                    onClick={() => handleEdit(type)}
-                    className="px-2.5 py-1.5 bg-black/20 text-slate-500 border border-athena-border/50 rounded hover:text-athena-accent transition-colors"
-                    data-tooltip="Bewerk blueprint configuratie"
-                  >
-                     ✏️
+                     VIEW
                   </button>
                </div>
             </div>
@@ -130,11 +128,7 @@ export default function SiteTypesView() {
         })}
       </div>
 
-      <BlueprintModal 
-        blueprint={selectedBlueprint} 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
+      <BlueprintModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} blueprint={selectedBlueprint} />
     </div>
   )
 }

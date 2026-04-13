@@ -14,7 +14,7 @@ import SettingsView from './views/SettingsView'
 import ToolsView from './views/ToolsView'
 import LegoView from './views/LegoView'
 import WizardView from './views/WizardView'
-import SitetypePreviewsView from './views/SitetypePreviewsView'
+import SitetypeBuilderView from './views/SitetypeBuilderView'
 import GeneratorModal from './components/GeneratorModal'
 import MarketingModal from './components/MarketingModal'
 import BlogModal from './components/BlogModal'
@@ -124,13 +124,14 @@ function App() {
         
         <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto mt-2 custom-scrollbar">
           <NavBtn id="wizard" label="Architect Wizard" icon="🧙‍♂️" active={currentView === 'wizard'} onClick={() => setCurrentView('wizard')} className="bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500/10 border-emerald-500/20" />
-          <NavBtn id="legos" label="Lego Library" icon="🧱" active={currentView === 'legos'} onClick={() => setCurrentView('legos')} />
-          <NavBtn id="sites" label="Sites" icon="🌐" active={currentView === 'sites'} onClick={() => setCurrentView('sites')} />
-          <NavBtn id="sitetype-previews" label="Sitetype Previews" icon="🧪" active={currentView === 'sitetype-previews'} onClick={() => setCurrentView('sitetype-previews')} className="border-l-2 border-athena-accent" />
           <NavBtn id="projects" label="Data Hub" icon="📁" active={currentView === 'projects'} onClick={() => setCurrentView('projects')} />
+          <NavBtn id="legos" label="Lego Library" icon="🧱" active={currentView === 'legos'} onClick={() => setCurrentView('legos')} />
+          <NavBtn id="sitetype-builder" label="Sitetype Builder" icon="🧪" active={currentView === 'sitetype-builder'} onClick={() => setCurrentView('sitetype-builder')} />
           <NavBtn id="sitetypes" label="SiteTypes" icon="🧩" active={currentView === 'sitetypes'} onClick={() => setCurrentView('sitetypes')} />
           
           <div className="h-px bg-athena-border my-2 mx-2 opacity-50"></div>
+
+          <NavBtn id="sites" label="Sites" icon="🌐" active={currentView === 'sites'} onClick={() => setCurrentView('sites')} />
           
           <NavBtn id="repositories" label="GitHub" icon="🐙" active={currentView === 'repositories'} onClick={() => setCurrentView('repositories')} />
           <NavBtn id="servers" label="Servers" icon="🖥️" active={currentView === 'servers'} onClick={() => setCurrentView('servers')} />
@@ -210,19 +211,12 @@ function App() {
             >
               COPY NAMES
             </button>
-             <button 
+            <button 
               onClick={refreshData}
               data-tooltip="Ververs alle data van de server"
               className="px-3 py-1.5 text-[11px] font-bold bg-[#21262d] border border-athena-border text-slate-400 hover:text-athena-accent rounded transition-colors"
             >
               REFRESH
-            </button>
-            <button 
-              onClick={() => setIsGeneratorOpen(true)}
-              data-tooltip="Handmatig een nieuw leeg project aanmaken"
-              className="px-3 py-1.5 text-[11px] font-black bg-athena-accent text-white rounded hover:brightness-110 transition-all shadow-lg shadow-blue-900/20 uppercase tracking-widest"
-            >
-              NIEUWE SITE
             </button>
           </div>
         </header>
@@ -297,13 +291,13 @@ function App() {
                </div>
             )}
 
-            {currentView === 'projects' && <ProjectsView />}
+            {currentView === 'projects' && <ProjectsView onNewSite={() => setIsGeneratorOpen(true)} />}
             {currentView === 'servers' && <ServersView />}
             {currentView === 'storage' && <StorageView />}
             {currentView === 'tools' && <ToolsView />}
             {currentView === 'repositories' && <RepositoriesView />}
             {currentView === 'sitetypes' && <SiteTypesView />}
-            {currentView === 'sitetype-previews' && <SitetypePreviewsView />}
+            {currentView === 'sitetype-builder' && <SitetypeBuilderView />}
             {currentView === 'legos' && <LegoView />}
             {currentView === 'wizard' && <WizardView />}
             {currentView === 'todo' && <TodoView />}
