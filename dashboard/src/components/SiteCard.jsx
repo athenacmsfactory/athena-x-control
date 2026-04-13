@@ -72,23 +72,21 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
     }
   };
 
-
-
   return (
-    <div className={`bg-athena-panel border border-athena-border rounded-sm transition-all flex flex-col min-h-[160px] group relative ${isRunning ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-amber-500'}`}>
+    <div className={`bg-athena-panel border border-athena-border rounded-sm transition-all flex flex-col min-h-[150px] group relative ${isRunning ? 'border-l-4 border-l-emerald-500 shadow-lg shadow-emerald-900/10' : 'border-l-4 border-l-amber-500'}`}>
       
       {/* Header Info */}
       <div className="p-3 pb-2 flex justify-between items-start">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-white text-[13px] tracking-tight group-hover:text-athena-accent transition-colors">{site.name}</h3>
-            {isHydrating && <span className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-ping" title="Hydrateren..."></span>}
+            {isHydrating && <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>}
           </div>
-          <p className="text-[10px] text-slate-500 font-medium uppercase flex items-center gap-2">
-             <span>{status === 'live' ? 'Live on Pages' : 'Local Project'}</span>
+          <p className="text-[10px] text-slate-500 font-black uppercase flex items-center gap-2 tracking-widest">
+             <span>{status === 'live' ? 'LIVE SITE' : 'LOCAL DEV'}</span>
              {site.deployData?.liveUrl && (
-               <a href={site.deployData.liveUrl} target="_blank" rel="noopener noreferrer" className="text-athena-accent hover:text-white transition-colors" title="Open Live Site">
-                 <span className="text-[10px]">↗️</span>
+               <a href={site.deployData.liveUrl} target="_blank" rel="noopener noreferrer" className="text-athena-accent hover:text-white transition-colors">
+                 LINK
                </a>
              )}
              <span className="font-mono bg-black/20 px-1 rounded text-slate-400">:{activeServer?.port || site.port || 5000}</span>
@@ -96,87 +94,66 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
         </div>
         <div className="flex flex-col gap-1 items-end">
           <Badge type={isRunning ? 'live' : 'local'} label={isRunning ? 'ACTIVE' : 'OFFLINE'} />
-          <Badge type={isInstalled ? 'info' : 'local'} label={isInstalled ? '💧 HYDRATED' : '🌵 DORMANT'} />
+          <Badge type={isInstalled ? 'info' : 'local'} label={isInstalled ? 'WET' : 'DRY'} />
         </div>
       </div>
 
-      {/* Grid of Actions (Klassieke compacte stijl) */}
-      <div className="px-3 pb-3 grid grid-cols-4 gap-1.5 mt-auto">
-        <ActionButton 
-          icon={isRunning ? "↗️" : (isHydrating ? "⏳" : "▶️")} 
-          label={isRunning ? "OPEN" : (isHydrating ? "WAIT" : "DEV")} 
-          title={isRunning ? "Open de actieve site op de toegewezen poort." : "Start de Vite development server voor deze site."}
+      {/* Grid of Actions - Dense & Icon-free */}
+      <div className="p-2 pt-0 grid grid-cols-2 gap-1 mt-auto">
+        <button 
           onClick={isRunning ? () => window.open(activeServer.url, '_blank') : handleStartDev}
-          active={isRunning || isHydrating}
           disabled={isHydrating}
-        />
-        <ActionButton 
-          icon="⚓" 
-          label="DOCK" 
-          title="Open de lokale preview in de Athena Dock."
+          className={`h-7 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all border ${isRunning ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-[#21262d] border-athena-border text-slate-500 hover:text-white'}`}
+        >
+          {isRunning ? "VIEW" : (isHydrating ? "WAIT" : "START")}
+        </button>
+
+        <button 
           onClick={() => ApiService.startDock().then(() => window.open(`http://localhost:5002?site=${site.name}`, '_blank'))}
-        />
-        <ActionButton 
-          icon={isInstalled ? "🌵" : "💧"} 
-          label={isInstalled ? "DRY" : "WET"} 
-          title={isInstalled ? "Site is 'Wet' (node_modules aanwezig). Klik om te verwijderen (DRY)." : "Site is 'Dry' (geen node_modules). Klik om te installeren (WET)."}
+          className="h-7 bg-[#21262d] border border-athena-border text-slate-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-sm"
+        >
+          DOCK
+        </button>
+
+        <button 
           onClick={isInstalled ? handleDehydrate : handleHydrate}
           disabled={isRunning || isHydrating}
-          danger={isInstalled}
-        />
-        <ActionButton 
-          icon="🛑" 
-          label="STOP" 
-          title="Stop de actieve server voor deze site."
+          className={`h-7 bg-[#21262d] border text-[9px] font-black uppercase tracking-widest rounded-sm transition-colors ${isInstalled ? 'text-blue-400 border-blue-900/30' : 'text-slate-500 border-athena-border hover:text-white'}`}
+        >
+          {isInstalled ? "DRY" : "WET"}
+        </button>
+
+        <button 
+          onClick={() => onSheet(site)}
+          className="h-7 bg-[#21262d] border border-athena-border text-slate-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-sm"
+        >
+          SHEET
+        </button>
+
+        <button 
+          onClick={() => ApiService.startMediaServer(site.name).then(() => window.open(`http://localhost:5004`, '_blank'))}
+          className="h-7 bg-[#21262d] border border-athena-border text-slate-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-sm"
+        >
+          MEDIA
+        </button>
+
+        <button 
+          onClick={async () => {
+             const res = await ApiService.parkSite(site.name);
+             if (res.success) { onRefresh(); }
+          }}
+          className="h-7 bg-[#21262d] border border-athena-border text-slate-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-sm"
+        >
+          VAULT
+        </button>
+
+        <button 
           onClick={handleStopDev}
           disabled={!isRunning}
-          danger={true}
-        />
-
-        <ActionButton 
-          icon="📝" 
-          label="SHEET" 
-          title="Open de gekoppelde Google Sheet voor data-beheer."
-          onClick={() => onSheet(site)}
-        />
-        <ActionButton 
-          icon="🖼️" 
-          label="MEDIA" 
-          title="Beheer afbeeldingen en downloads in de Media Manager."
-          onClick={() => ApiService.startMediaServer(site.name).then(() => window.open(`http://localhost:5004`, '_blank'))}
-        />
-        <ActionButton 
-          icon="📦" 
-          label="PUSH" 
-          title="Archiveer en rsync deze site naar de Vault met het Forklift systeem."
-          onClick={async () => {
-            addToast(`🚜 Forklift: Pushen van ${site.name} naar Vault...`, 'info');
-            const res = await ApiService.parkSite(site.name);
-            if (res.success) {
-              addToast(`✅ ${site.name} succesvol gepushed naar Vault.`, 'success');
-              onRefresh();
-            } else {
-              addToast(`❌ Forklift Error: ${res.error}`, 'error');
-            }
-          }}
-        />
-        <ActionButton 
-          icon="🗑️" 
-          label="DELETE" 
-          title="Verwijder deze site DEFINITIEF uit de actieve Werkplaats."
-          onClick={async () => {
-            if (confirm(`LET OP: Wil je ${site.name} DEFINITIEF verwijderen uit de Werkplaats?`)) {
-              addToast(`Site ${site.name} aan het verwijderen...`, 'info');
-              const res = await ApiService.deleteSite(site.name);
-              if (res.success) {
-                addToast(`Site ${site.name} verwijderd uit Werkplaats.`, 'success');
-                onRefresh();
-              } else {
-                addToast(`Fout: ${res.error}`, 'error');
-              }
-            }
-          }}
-        />
+          className={`col-span-2 h-7 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[9px] font-black uppercase tracking-widest rounded-sm hover:bg-rose-500 hover:text-white transition-all ${!isRunning ? 'opacity-0 pointer-events-none' : ''}`}
+        >
+          STOP SERVER
+        </button>
       </div>
     </div>
   );
@@ -184,32 +161,13 @@ export default function SiteCard({ site, activeServer, autoStop, onRefresh, onSE
 
 function Badge({ type, label }) {
   const styles = {
-    live: 'text-emerald-500 border-emerald-500/30 bg-emerald-500/5',
-    local: 'text-amber-500 border-amber-500/30 bg-amber-500/5',
-    info: 'text-blue-400 border-blue-500/30 bg-blue-500/5',
+    live: 'text-emerald-500 border-emerald-500/30',
+    local: 'text-amber-500 border-amber-500/30',
+    info: 'text-blue-400 border-blue-500/30',
   };
   return (
-    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm border uppercase tracking-tighter ${styles[type]}`}>
+    <span className={`text-[8.5px] font-black px-1.5 rounded-sm border uppercase tracking-widest ${styles[type]}`}>
       {label}
     </span>
-  );
-}
-
-function ActionButton({ icon, label, onClick, active, disabled, danger, highlight, title }) {
-  return (
-    <button 
-      onClick={onClick}
-      disabled={disabled}
-      data-tooltip={title}
-      className={`flex flex-col items-center justify-center gap-1 p-1.5 rounded-sm border text-[8px] font-black uppercase tracking-tighter transition-all
-        ${disabled ? 'opacity-20 cursor-not-allowed bg-black/20 border-slate-800' : 
-          active ? 'bg-emerald-500 text-white border-emerald-400 shadow-lg shadow-emerald-900/20' : 
-          highlight ? 'bg-athena-accent text-white border-blue-400' :
-          danger ? 'text-rose-500 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500 hover:text-white' :
-          'bg-[#21262d] border-athena-border text-slate-400 hover:bg-[#30363d] hover:border-slate-600 hover:text-white'}`}
-    >
-      <span className="text-xs">{icon}</span>
-      <span className="truncate w-full text-center">{label}</span>
-    </button>
   );
 }

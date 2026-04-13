@@ -63,32 +63,32 @@ export default function LegoView() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           {filteredLegos.map((lego, idx) => (
             <div 
               key={idx} 
-              className="bg-athena-panel border border-athena-border rounded-sm hover:-translate-y-1 transition-transform p-5 flex flex-col group relative"
+              className="bg-athena-panel border border-athena-border rounded-sm hover:border-athena-accent transition-all p-3 flex flex-col group relative"
             >
               
-              <div className="flex justify-between items-start mb-3">
+              <div className="flex justify-between items-start mb-2">
                 <div>
-                  <span className="text-[9px] font-black uppercase tracking-widest text-[#bc6c25] block mb-1">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-[#bc6c25] block mb-0.5">
                     {lego.category}
                   </span>
-                  <h4 className="text-sm font-bold text-slate-100">{lego.name}</h4>
+                  <h4 className="text-[12px] font-bold text-slate-100 leading-tight">{lego.name}</h4>
                 </div>
               </div>
 
-              <div className="mt-4 flex gap-2">
+              <div className="mt-auto pt-2 flex gap-3 border-t border-athena-border/10">
                  <button 
                    onClick={(e) => { e.stopPropagation(); setEditingLego(lego); }}
-                   className="text-[9px] font-bold text-athena-accent uppercase hover:underline z-10 relative">
-                   Edit Code
+                   className="text-[9px] font-bold text-athena-accent uppercase hover:text-white transition-colors">
+                   EDIT
                  </button>
                  <button 
                    onClick={(e) => { e.stopPropagation(); setPreviewingLego(lego); }}
-                   className="text-[9px] font-bold text-emerald-500 uppercase hover:underline z-10 relative">
-                   Lego Preview
+                   className="text-[9px] font-bold text-emerald-500 uppercase hover:text-white transition-colors">
+                   PREVIEW
                  </button>
               </div>
             </div>
