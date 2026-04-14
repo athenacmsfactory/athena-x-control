@@ -6,7 +6,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"
 
 # Config paths
-API_DIR="../athena/factory/athena-api"
+API_DIR="../athena/athena-api"
 UI_DIR="dashboard"
 LOG_DIR="../athena/output/logs"
 PM_CLI="../athena/factory/cli/pm-cli.js"

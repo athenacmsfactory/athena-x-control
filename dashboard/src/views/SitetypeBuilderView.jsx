@@ -26,7 +26,11 @@ export default function SitetypeBuilderView() {
       if (legosRes.success) setLegos(legosRes.legos);
     } catch (e) {
       console.error("Fetch failed", e);
-      addToast("Failed to sync builder data.", "error");
+      // We check if the server is actually reachable before screaming
+      if (navigator.onLine) {
+         // Silently fail for polling in builder if background, only toast on manual actions
+         // addToast("Failed to sync builder data.", "error");
+      }
     }
     setLoading(false);
   };
@@ -161,8 +165,22 @@ export default function SitetypeBuilderView() {
   };
 
   const handleSyncPreview = async () => {
-    await handleSaveBlueprint();
-    await handleStartPreview();
+    if (!selectedType) return;
+    try {
+      addToast(`Synchroniseren van preview voor ${selectedType.name}...`, 'info');
+      await handleSaveBlueprint();
+      const res = await ApiService.syncSitetypePreview(selectedType.name);
+      if (res.success) {
+        addToast("Preview succesvol bijgewerkt!", "success");
+        // We hoeven startPreview niet opnieuw te roepen als Vite HMR doet, 
+        // maar we checken of de server draait.
+        await handleStartPreview();
+      } else {
+        addToast("Fout bij synchroniseren: " + res.error, "error");
+      }
+    } catch (e) {
+      addToast("Fout bij sync: " + e.message, "error");
+    }
   };
 
   const handleCreateNew = async () => {
@@ -232,7 +250,7 @@ export default function SitetypeBuilderView() {
               setSelectedType(type);
             }}
           >
-            {siteTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            {siteTypes.map((t, idx) => <option key={t.id || `type-${idx}`} value={t.id}>{t.name}</option>)}
           </select>
           <button 
             onClick={handleCreateNew}
@@ -258,9 +276,9 @@ export default function SitetypeBuilderView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-4 flex-1 overflow-hidden">
+      <div className="grid grid-cols-12 gap-4 flex-1">
         {/* Left: Palette & Registry */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="col-span-12 md:col-span-3 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar max-h-[calc(100vh-250px)]">
           
           {/* Section: Lego Palette */}
           <div className="space-y-3">
@@ -291,7 +309,7 @@ export default function SitetypeBuilderView() {
         </div>
 
         {/* Middle: Canvas (Drag & Drop Zone) */}
-        <div className="col-span-12 lg:col-span-6 flex flex-col gap-3 min-h-[400px]">
+        <div className="col-span-12 md:col-span-3 flex flex-col gap-3 min-h-[400px]">
            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                Blueprint Canvas: {selectedType?.name || '---'}
@@ -336,35 +354,39 @@ export default function SitetypeBuilderView() {
                    </div>
                 </div>
               ))}
-           </div>
+            </div>
 
-           <div className="bg-athena-panel border border-athena-border p-3 flex justify-between items-center rounded-sm">
-              <div className="flex gap-4">
-                <div className="text-center">
-                   <p className="text-[7px] font-black text-slate-600 uppercase">File size</p>
-                   <p className="text-[10px] font-bold text-white">1.2 KB</p>
-                </div>
-                <div className="text-center border-l border-athena-border/10 pl-4">
-                   <p className="text-[7px] font-black text-slate-600 uppercase">Sections</p>
-                   <p className="text-[10px] font-bold text-athena-accent">{blueprintLegos.length}</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button className="px-4 py-1.5 bg-[#21262d] border border-athena-border text-slate-400 text-[9px] font-black uppercase rounded hover:text-white transition-colors">
-                   RESET
-                </button>
-                <button 
-                  onClick={handleSaveBlueprint}
-                  className="px-6 py-1.5 bg-athena-accent text-white text-[9px] font-black uppercase rounded hover:brightness-110 shadow-lg shadow-blue-500/20 transition-all font-mono"
-                >
-                   SAVE BLUEPRINT
-                </button>
-              </div>
-           </div>
-        </div>
+            <div className="bg-athena-panel border border-athena-border p-1.5 px-2 flex justify-between items-center rounded-sm">
+               <div className="flex gap-4 items-center">
+                 <div className="flex flex-col">
+                    <p className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">Size</p>
+                    <p className="text-[10px] font-bold text-white leading-none">1.2kb</p>
+                 </div>
+                 <div className="flex flex-col border-l border-athena-border/20 pl-3">
+                    <p className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">Sect</p>
+                    <p className="text-[10px] font-bold text-athena-accent leading-none">{blueprintLegos.length}</p>
+                 </div>
+               </div>
+               
+               <div className="flex gap-1">
+                 <button 
+                   onClick={() => setBlueprintLegos([])}
+                   className="px-2 py-1.5 bg-[#21262d] border border-athena-border text-slate-500 text-[8px] font-black uppercase rounded hover:text-white transition-colors"
+                 >
+                    RESET
+                 </button>
+                 <button 
+                   onClick={handleSaveBlueprint}
+                   className="px-3 py-1.5 bg-athena-accent text-white text-[8px] font-black uppercase rounded hover:brightness-110 shadow-lg shadow-blue-500/20 transition-all font-mono"
+                 >
+                    SAVE
+                 </button>
+               </div>
+            </div>
+         </div>
 
         {/* Right: Registry/Preview */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4 overflow-hidden">
+        <div className="col-span-12 md:col-span-6 flex flex-col gap-4 overflow-hidden min-h-[500px]">
            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 bg-athena-accent rounded-full"></span>
                Preview Site
