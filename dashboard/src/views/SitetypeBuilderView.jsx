@@ -12,6 +12,8 @@ export default function SitetypeBuilderView() {
   const [selectedType, setSelectedType] = useState(null);
   const [settingsLego, setSettingsLego] = useState(null);
   const [settingsJson, setSettingsJson] = useState('{}');
+  const [blueprintLegos, setBlueprintLegos] = useState([]);
+  const [previewKey, setPreviewKey] = useState(Date.now());
 
   const fetchData = async () => {
     setLoading(true);
@@ -41,8 +43,6 @@ export default function SitetypeBuilderView() {
     return () => clearInterval(interval);
   }, []);
 
-  const [blueprintLegos, setBlueprintLegos] = useState([]);
-
   useEffect(() => {
     if (siteTypes.length > 0 && !selectedType) {
        setSelectedType(siteTypes[0]);
@@ -53,20 +53,27 @@ export default function SitetypeBuilderView() {
     if (selectedType) {
       const loadBlueprint = async () => {
         try {
+          // 1. Load the blueprint data
           const res = await fetch(`/api/blueprints/${selectedType.name}`);
           const data = await res.json();
+          
           if (data && data.sections) {
             setBlueprintLegos(data.sections.map((s, idx) => ({
                id: s.id || `init-${idx}`,
-               name: s.component || s.id, // Fallback to id for older blueprints
+               name: s.component || s.name || s.id,
                category: s.category || 'Common',
-               props: s.props || s.fields || {} // Fallback to fields for older blueprints
+               props: s.props || {}
             })));
           } else {
             setBlueprintLegos([]);
           }
+
+          // 2. AUTO-SYNC: Trigger a preview update for the new sitetype
+          addToast(`Loading ${selectedType.name} preview...`, 'info');
+          await ApiService.syncSitetypePreview(selectedType.name);
+          setPreviewKey(Date.now()); // Force iframe reload
         } catch (e) {
-          console.error("Failed to load blueprint", e);
+          console.error("Failed to load blueprint or sync preview", e);
           setBlueprintLegos([]);
         }
       };
@@ -171,10 +178,8 @@ export default function SitetypeBuilderView() {
       await handleSaveBlueprint();
       const res = await ApiService.syncSitetypePreview(selectedType.name);
       if (res.success) {
-        addToast("Preview succesvol bijgewerkt!", "success");
-        // We hoeven startPreview niet opnieuw te roepen als Vite HMR doet, 
-        // maar we checken of de server draait.
-        await handleStartPreview();
+        addToast('Preview synchronized successfully!', 'success');
+        setPreviewKey(Date.now()); // Force iframe reload
       } else {
         addToast("Fout bij synchroniseren: " + res.error, "error");
       }
@@ -244,13 +249,17 @@ export default function SitetypeBuilderView() {
           </div>
           <select 
             className="ml-4 bg-black/40 border border-athena-border text-white text-[10px] rounded px-2 py-1 outline-none focus:border-athena-accent"
-            value={selectedType?.id || ''}
+            value={selectedType?.name || ''}
             onChange={(e) => {
-              const type = siteTypes.find(t => t.id === e.target.value);
+              const type = siteTypes.find(t => t.name === e.target.value);
               setSelectedType(type);
             }}
           >
-            {siteTypes.map((t, idx) => <option key={t.id || `type-${idx}`} value={t.id}>{t.name}</option>)}
+            {siteTypes.map((t, idx) => (
+              <option key={t.name || `type-${idx}`} value={t.name}>
+                {t.name}
+              </option>
+            ))}
           </select>
           <button 
             onClick={handleCreateNew}
@@ -400,7 +409,12 @@ export default function SitetypeBuilderView() {
                  {activePreviews.length > 0 ? (
                    <div className="h-full flex flex-col space-y-3">
                       <div className="flex-1 bg-black rounded border border-athena-border overflow-hidden relative group">
-                        <iframe src={activePreviews[0].url} className="w-full h-full scale-[0.6] origin-top-left" style={{ width: '166.666%', height: '166.666%' }} title="Mini Preview"></iframe>
+                        <iframe 
+                          src={`${activePreviews[0].url}?t=${previewKey}`} 
+                          className="w-full h-full scale-[0.6] origin-top-left" 
+                          style={{ width: '166.666%', height: '166.666%' }} 
+                          title="Mini Preview"
+                        ></iframe>
                       </div>
                       <div className="space-y-1">
                          <p className="text-[7px] font-black text-slate-600 uppercase">Synchronizing with</p>
