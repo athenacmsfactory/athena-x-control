@@ -39,6 +39,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [autoStop, setAutoStop] = useState(() => localStorage.getItem('athena-auto-stop') !== 'false')
   const [isOffline, setIsOffline] = useState(false)
+  const [isShuttingDown, setIsShuttingDown] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   useEffect(() => {
@@ -124,21 +125,40 @@ function App() {
     <div className="flex h-screen overflow-hidden bg-athena-darker text-athena-text-main relative">
       {isOffline && (
         <div className="absolute inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center text-center p-12 animate-in fade-in duration-700">
-           <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center border border-rose-500/20 mb-8 animate-pulse">
-              <span className="text-4xl">👋</span>
+           <div className={`w-24 h-24 rounded-full flex items-center justify-center border mb-8 ${isShuttingDown ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20 animate-pulse'}`}>
+              <span className="text-4xl">{isShuttingDown ? '🏁' : '👋'}</span>
            </div>
-           <h1 className="text-3xl font-black text-white uppercase tracking-[0.2em] mb-4">Athena v9 Offline</h1>
+           
+           <h1 className="text-3xl font-black text-white uppercase tracking-[0.2em] mb-4">
+             {isShuttingDown ? 'Athena Afgesloten' : 'Verbinding Verbroken'}
+           </h1>
+           
            <p className="max-w-md text-slate-400 text-sm leading-relaxed mb-10 font-medium">
-             De verbinding met de Dashboard API is verbroken. Het systeem is gestopt of de server is onbereikbaar.
+             {isShuttingDown 
+               ? "Het systeem is succesvol uitgeschakeld en alle poorten zijn vrijgegeven. Je kunt dit tabblad nu sluiten." 
+               : "De verbinding met de Dashboard API is verbroken. Mogelijk is de server onbereikbaar of gecrasht."}
            </p>
-           <button 
-             onClick={() => { setIsOffline(false); refreshData(); }}
-             className="px-8 py-3 bg-athena-accent text-white text-[11px] font-black uppercase tracking-widest rounded shadow-2xl shadow-blue-500/20 hover:scale-105 transition-all"
-           >
-             PROBEER OPNIEUW VERBINDEN
-           </button>
+
+           {!isShuttingDown ? (
+             <button 
+               onClick={() => { setIsOffline(false); refreshData(); }}
+               className="px-8 py-3 bg-athena-accent text-white text-[11px] font-black uppercase tracking-widest rounded shadow-2xl shadow-blue-500/20 hover:scale-105 transition-all"
+             >
+               PROBEER OPNIEUW VERBINDEN
+             </button>
+           ) : (
+             <div className="flex flex-col items-center gap-4">
+                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20">
+                   Status: Veilig Offline
+                </p>
+                <code className="text-[10px] font-mono text-slate-500 bg-black/40 px-3 py-1.5 rounded">
+                   Herstarten via: ./control/launch.sh
+                </code>
+             </div>
+           )}
+
            <p className="mt-8 text-[9px] font-black text-slate-600 uppercase tracking-widest">
-              Gekoppeld aan: {window.location.hostname}
+              Host: {window.location.hostname}
            </p>
         </div>
       )}
@@ -273,6 +293,7 @@ function App() {
               onClick={async () => {
                 if (confirm("Weet je zeker dat je alle processen wilt stoppen en Athena wilt afsluiten?")) {
                   addToast("Systeem wordt afgesloten...", "info");
+                  setIsShuttingDown(true); // Mark as intentional shutdown
                   try {
                     await ApiService.shutdown();
                     setIsOffline(true);
