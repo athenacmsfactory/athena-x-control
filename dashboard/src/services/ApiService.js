@@ -9,6 +9,7 @@ export const ApiService = {
   // System
   getSystemStatus: () => fetch(`${API_BASE}/system-status`).then(res => res.json()),
   getConfig: () => fetch(`${API_BASE}/system/config`).then(res => res.json()),
+  shutdown: () => fetch(`${API_BASE}/system/shutdown`, { method: 'POST' }).then(res => res.json()),
 
   // Projects
   getProjects: () => fetch(`${API_BASE}/projects`).then(res => res.json()),
@@ -158,6 +159,7 @@ export const ApiService = {
   getSitetypePreviews: () => fetch(`${API_BASE}/sitetype/previews`).then(res => res.json()),
   provisionSitetypePreview: (name) => fetch(`${API_BASE}/sitetype/${name}/provision`, { method: 'POST' }).then(res => res.json()),
   startSitetypePreview: (name) => fetch(`${API_BASE}/sitetype/${name}/preview`, { method: 'POST' }).then(res => res.json()),
+  syncSitetypePreview: (name) => fetch(`${API_BASE}/sitetype/${name}/sync`, { method: 'POST' }).then(res => res.json()),
 
   createSiteType: (data) => fetch(`${API_BASE}/sitetype/create`, {
     method: 'POST',

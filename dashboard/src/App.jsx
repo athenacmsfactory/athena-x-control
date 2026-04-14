@@ -38,6 +38,8 @@ function App() {
   const [systemStatus, setSystemStatus] = useState(null)
   const [loading, setLoading] = useState(true)
   const [autoStop, setAutoStop] = useState(() => localStorage.getItem('athena-auto-stop') !== 'false')
+  const [isOffline, setIsOffline] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   useEffect(() => {
     refreshData()
@@ -46,13 +48,19 @@ function App() {
   }, [])
 
   const refreshServers = async () => {
+    if (isOffline) return
     try {
       const data = await ApiService.getActiveServers()
       setActiveServers(data.servers || [])
-    } catch (e) { console.error("Server check failed") }
+      setIsOffline(false)
+    } catch (e) { 
+      console.error("Server check failed")
+      // We don't immediately set offline on one failed server check
+    }
   }
 
   const refreshData = async () => {
+    if (isOffline) return
     setLoading(true)
     try {
       const [siteData, statusData, serverData] = await Promise.all([
@@ -63,8 +71,10 @@ function App() {
       setSites(siteData)
       setSystemStatus(statusData)
       setActiveServers(serverData.servers || [])
+      setIsOffline(false)
     } catch (error) {
       console.error("Failed to load dashboard data:", error)
+      setIsOffline(true)
     } finally {
       setLoading(false)
     }
@@ -111,18 +121,40 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-athena-darker text-athena-text-main">
+    <div className="flex h-screen overflow-hidden bg-athena-darker text-athena-text-main relative">
+      {isOffline && (
+        <div className="absolute inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center text-center p-12 animate-in fade-in duration-700">
+           <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center border border-rose-500/20 mb-8 animate-pulse">
+              <span className="text-4xl">👋</span>
+           </div>
+           <h1 className="text-3xl font-black text-white uppercase tracking-[0.2em] mb-4">Athena v9 Offline</h1>
+           <p className="max-w-md text-slate-400 text-sm leading-relaxed mb-10 font-medium">
+             De verbinding met de Dashboard API is verbroken. Het systeem is gestopt of de server is onbereikbaar.
+           </p>
+           <button 
+             onClick={() => { setIsOffline(false); refreshData(); }}
+             className="px-8 py-3 bg-athena-accent text-white text-[11px] font-black uppercase tracking-widest rounded shadow-2xl shadow-blue-500/20 hover:scale-105 transition-all"
+           >
+             PROBEER OPNIEUW VERBINDEN
+           </button>
+           <p className="mt-8 text-[9px] font-black text-slate-600 uppercase tracking-widest">
+              Gekoppeld aan: {window.location.hostname}
+           </p>
+        </div>
+      )}
       {/* SIDEBAR */}
-      <aside className="w-[180px] bg-athena-panel border-r border-athena-border flex flex-col flex-shrink-0">
-        <div className="p-3 border-b border-athena-border flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-athena-accent rounded flex items-center justify-center font-bold text-white text-lg">A</div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-white leading-tight">ATHENA</h1>
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">v8.7 PRO</span>
+      <aside className={`bg-athena-panel border-r border-athena-border flex flex-col flex-shrink-0 transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'w-[180px]' : 'w-0 border-r-0'}`}>
+        <div className="p-3 border-b border-athena-border flex items-center justify-between min-w-[180px]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-athena-accent rounded flex items-center justify-center font-bold text-white text-lg">A</div>
+            <div>
+              <h1 className="text-sm font-bold tracking-tight text-white leading-tight">ATHENA</h1>
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">v8.7 PRO</span>
+            </div>
           </div>
         </div>
         
-        <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto mt-2 custom-scrollbar">
+        <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto mt-2 custom-scrollbar min-w-[180px]">
           <NavBtn id="wizard" label="Architect Wizard" icon="🧙‍♂️" active={currentView === 'wizard'} onClick={() => setCurrentView('wizard')} className="bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500/10 border-emerald-500/20" />
           <NavBtn id="projects" label="Data Hub" icon="📁" active={currentView === 'projects'} onClick={() => setCurrentView('projects')} />
           <NavBtn id="legos" label="Lego Library" icon="🧱" active={currentView === 'legos'} onClick={() => setCurrentView('legos')} />
@@ -165,8 +197,15 @@ function App() {
 
       {/* CONTENT AREA */}
       <div className="flex-1 flex flex-col overflow-hidden bg-athena-dark">
-        <header className="h-12 bg-athena-panel border-b border-athena-border px-5 flex justify-between items-center flex-shrink-0 shadow-sm">
-          <div className="flex items-center gap-6">
+        <header className="h-12 bg-athena-panel border-b border-athena-border px-4 flex justify-between items-center flex-shrink-0 shadow-sm">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-1 px-2 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors border border-athena-border/50"
+              title="Toggle Sidebar"
+            >
+              <span className="text-lg">☰</span>
+            </button>
             <h2 className="text-[13px] font-semibold text-white uppercase tracking-wider">{currentView.replace('-', ' ')}</h2>
             {currentView === 'sites' && (
               <div className="flex bg-black/20 p-1 rounded border border-athena-border/30">
@@ -211,12 +250,41 @@ function App() {
             >
               COPY NAMES
             </button>
+            <div className="flex items-center gap-3 mr-2">
+               <div 
+                 onClick={() => setCurrentView('servers')}
+                 className={`flex items-center gap-1.5 px-2 py-1 rounded bg-black/20 border border-athena-border/50 transition-all cursor-pointer hover:bg-black/40 active:scale-95 ${activeServers.filter(s => !s.isSystem).length > 0 ? 'border-emerald-500/30' : ''}`}
+               >
+                  <span className={`w-1.5 h-1.5 rounded-full ${activeServers.filter(s => !s.isSystem).length > 0 ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-700'}`}></span>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                     {activeServers.filter(s => !s.isSystem).length} ACTIEF
+                  </span>
+               </div>
+            </div>
+
             <button 
               onClick={refreshData}
               data-tooltip="Ververs alle data van de server"
               className="px-3 py-1.5 text-[11px] font-bold bg-[#21262d] border border-athena-border text-slate-400 hover:text-athena-accent rounded transition-colors"
             >
               REFRESH
+            </button>
+            <button 
+              onClick={async () => {
+                if (confirm("Weet je zeker dat je alle processen wilt stoppen en Athena wilt afsluiten?")) {
+                  addToast("Systeem wordt afgesloten...", "info");
+                  try {
+                    await ApiService.shutdown();
+                    setIsOffline(true);
+                  } catch (e) {
+                    setIsOffline(true);
+                  }
+                }
+              }}
+              data-tooltip="STOP ALLE PROCESSEN & SLUIT AF"
+              className="px-3 py-1.5 text-[11px] font-black bg-rose-600/10 border border-rose-500/30 text-rose-500 hover:bg-rose-600 hover:text-white rounded transition-all"
+            >
+              QUIT
             </button>
           </div>
         </header>
