@@ -41,7 +41,7 @@ function App() {
   const [isOffline, setIsOffline] = useState(false)
   const [isShuttingDown, setIsShuttingDown] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-
+  
   useEffect(() => {
     refreshData()
     const interval = setInterval(refreshServers, 15000)
