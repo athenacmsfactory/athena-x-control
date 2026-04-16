@@ -298,7 +298,7 @@ export default function SitetypeBuilderView() {
                </span>
                <span className="text-[8px] opacity-60">DRAG BRICKS</span>
             </h4>
-            <div className="grid grid-cols-1 gap-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
               {legos.map((lego, idx) => (
                 <div 
                   key={idx} 
@@ -318,7 +318,7 @@ export default function SitetypeBuilderView() {
         </div>
 
         {/* Middle: Canvas (Drag & Drop Zone) */}
-        <div className="col-span-12 md:col-span-3 flex flex-col gap-3 min-h-[400px]">
+        <div className="col-span-12 md:col-span-2 flex flex-col gap-3 min-h-[400px]">
            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                Blueprint Canvas: {selectedType?.name || '---'}
@@ -327,7 +327,7 @@ export default function SitetypeBuilderView() {
            <div 
              onDrop={onDrop}
              onDragOver={onDragOver}
-             className="flex-1 bg-black/40 border-2 border-dashed border-athena-border/50 rounded-sm p-4 flex flex-col gap-2 overflow-y-auto custom-scrollbar relative"
+             className="flex-1 bg-black/40 border-2 border-dashed border-athena-border/50 rounded-sm p-2 flex flex-col gap-2 overflow-y-auto overflow-x-hidden custom-scrollbar relative"
            >
               {blueprintLegos.length === 0 && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center opacity-20 pointer-events-none p-12">
@@ -338,55 +338,55 @@ export default function SitetypeBuilderView() {
               )}
 
               {blueprintLegos.map((lego, idx) => (
-                <div key={lego.id} className="bg-athena-panel border border-athena-border p-3 rounded-sm flex items-center justify-between group shadow-lg animate-in fade-in slide-in-from-left-2 duration-300">
-                   <div className="flex items-center gap-4">
-                      <div className="w-6 h-6 bg-black/40 text-[10px] font-black flex items-center justify-center text-slate-600 rounded">
-                         {idx + 1}
-                      </div>
-                      <div>
-                        <p className="text-[7px] font-black text-athena-accent uppercase tracking-widest">{lego.category}</p>
-                        <h5 className="text-[11px] font-bold text-white">{lego.name}</h5>
-                      </div>
-                   </div>
-                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                      <button 
-                        onClick={() => {
-                          setSettingsLego(lego);
-                          setSettingsJson(JSON.stringify(lego.props || {}, null, 2));
-                        }}
-                        className="p-1 px-2 bg-black/40 text-[9px] text-slate-500 rounded hover:text-white" 
-                        title="Configure"
-                      >
-                        SETTINGS
-                      </button>
-                      <button onClick={() => removeLego(lego.id)} className="p-1 px-2 bg-rose-500/10 text-rose-500 text-[9px] rounded hover:bg-rose-500 hover:text-white" title="Remove">REMOVE</button>
-                   </div>
-                </div>
-              ))}
+                 <div key={lego.id} className="bg-athena-panel border border-athena-border px-2 py-1 rounded-sm flex flex-col group shadow-lg animate-in fade-in slide-in-from-left-2 duration-300">
+                    <div className="flex items-center gap-2">
+                       <div className="w-4 h-4 shrink-0 bg-black/40 text-[8px] font-black flex items-center justify-center text-slate-600 rounded">
+                          {idx + 1}
+                       </div>
+                       <div className="min-w-0 flex-1 overflow-hidden">
+                         <p className="text-[5px] font-black text-athena-accent uppercase tracking-widest truncate leading-none">{lego.category}</p>
+                         <h5 className="text-[10px] font-bold text-white truncate leading-none">{lego.name}</h5>
+                       </div>
+                       <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all">
+                          <button 
+                            onClick={() => {
+                              setSettingsLego(lego);
+                              setSettingsJson(JSON.stringify(lego.props || {}, null, 2));
+                            }}
+                            className="px-1.5 py-0.5 bg-black/40 text-[7px] text-slate-400 rounded hover:text-white" 
+                            title="Configure"
+                          >
+                            SET
+                          </button>
+                          <button onClick={() => removeLego(lego.id)} className="px-1.5 py-0.5 bg-rose-500/10 text-rose-500 text-[7px] rounded hover:bg-rose-500 hover:text-white" title="Remove">DEL</button>
+                       </div>
+                    </div>
+                 </div>
+               ))}
             </div>
 
-            <div className="bg-athena-panel border border-athena-border p-1.5 px-2 flex justify-between items-center rounded-sm">
-               <div className="flex gap-4 items-center">
+            <div className="bg-athena-panel border border-athena-border p-1.5 flex flex-col gap-1.5 rounded-sm xl:flex-row xl:justify-between xl:items-center">
+               <div className="flex gap-2 items-center justify-between px-1">
                  <div className="flex flex-col">
                     <p className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">Size</p>
                     <p className="text-[10px] font-bold text-white leading-none">1.2kb</p>
                  </div>
-                 <div className="flex flex-col border-l border-athena-border/20 pl-3">
+                 <div className="flex flex-col border-l border-athena-border/20 pl-2">
                     <p className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">Sect</p>
                     <p className="text-[10px] font-bold text-athena-accent leading-none">{blueprintLegos.length}</p>
                  </div>
                </div>
                
-               <div className="flex gap-1">
+               <div className="flex gap-1 w-full xl:w-auto">
                  <button 
                    onClick={() => setBlueprintLegos([])}
-                   className="px-2 py-1.5 bg-[#21262d] border border-athena-border text-slate-500 text-[8px] font-black uppercase rounded hover:text-white transition-colors"
+                   className="flex-1 xl:flex-none px-2 py-1 bg-[#21262d] border border-athena-border text-slate-500 text-[8px] font-black uppercase rounded hover:text-white transition-colors"
                  >
                     RESET
                  </button>
                  <button 
                    onClick={handleSaveBlueprint}
-                   className="px-3 py-1.5 bg-athena-accent text-white text-[8px] font-black uppercase rounded hover:brightness-110 shadow-lg shadow-blue-500/20 transition-all font-mono"
+                   className="flex-1 xl:flex-none px-2 py-1 bg-athena-accent text-white text-[8px] font-black uppercase rounded hover:brightness-110 shadow-lg shadow-blue-500/20 transition-all font-mono"
                  >
                     SAVE
                  </button>
@@ -395,7 +395,7 @@ export default function SitetypeBuilderView() {
          </div>
 
         {/* Right: Registry/Preview */}
-        <div className="col-span-12 md:col-span-6 flex flex-col gap-4 overflow-hidden min-h-[500px]">
+        <div className="col-span-12 md:col-span-7 flex flex-col gap-4 overflow-hidden min-h-[500px]">
            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 bg-athena-accent rounded-full"></span>
                Preview Site
