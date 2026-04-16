@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+dist/
+.npm
+.pnpm-debug.log*
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+.env
+.env.local
+
+# Athena Specific
+dashboard-OLD-ARCHIVE/
+sitetypes-preview/
+dashboard/dist/
+dashboard/node_modules/
+sitetypes-builder/node_modules/
+sitetypes-builder/dist/
+
+# Temporary
+.gemini/tmp/
+tmp/
+temp/
