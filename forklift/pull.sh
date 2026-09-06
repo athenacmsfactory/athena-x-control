@@ -16,8 +16,8 @@ if [[ "$SITE_NAME" == *"/"* ]] || [[ "$SITE_NAME" == *".."* ]]; then
     exit 1
 fi
 
-VAULT_PATH="/home/kareltestspecial/0-IT/4-pj/x-v9/sites/$SITE_NAME"
-PLAYGROUND_PATH="/home/kareltestspecial/0-IT/4-pj/x-v9/y/factory/werkplaats/$SITE_NAME"
+VAULT_PATH="/home/kareltestspecial/workspace/x-v9/vault/$SITE_NAME"
+PLAYGROUND_PATH="/home/kareltestspecial/workspace/x-v9/athena/sites/$SITE_NAME"
 
 if [ ! -d "$VAULT_PATH" ]; then
     echo "❌ Error: Site '$SITE_NAME' not found in Vault ($VAULT_PATH)."
@@ -27,7 +27,7 @@ fi
 echo "🚚 Pulling '$SITE_NAME' from Vault to Werkplaats..."
 
 # Ensure parent directory exists
-mkdir -p "/home/kareltestspecial/0-IT/4-pj/x-v9/y/factory/werkplaats"
+mkdir -p "/home/kareltestspecial/workspace/x-v9/athena/sites"
 
 # Sync data
 # -a: archive mode
@@ -48,12 +48,13 @@ fi
 
 echo "✅ Pull complete. Site is ready in: $PLAYGROUND_PATH"
 
-# 🔄 Git Integration: Auto-track the unparked site
-if [ -d "../y/werkplaats/.git" ]; then
+# 🔄 Git Integration: Auto-track the unparked site (athena-repo bevat sites/)
+ATHENA_ROOT="/home/kareltestspecial/workspace/x-v9/athena"
+if [ -d "$ATHENA_ROOT/.git" ]; then
     echo "🏗️  Staging changes to Git..."
-    cd "../y/werkplaats" || exit
-    git add -A "$SITE_NAME"
-    git commit -m "unpark: $SITE_NAME from Vault"
+    cd "$ATHENA_ROOT" || exit
+    git add -A "sites/$SITE_NAME"
+    git commit -m "unpark: $SITE_NAME from Vault" || echo "Nothing to commit"
 else
     echo "💡 The Factory can now access this site via its internal 'sites' symlink."
 fi
