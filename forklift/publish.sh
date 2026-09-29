@@ -24,8 +24,15 @@ fi
 echo "🌐 Pushen naar GitHub Pages (via Vault Repo)..."
 cd "$VAULT_ROOT"
 
-# Controleer identiteit voor de zekerheid
-ssh -T git@github.com 2>&1 | grep -q "Hi athenacmsfactory" || { echo "❌ SSH Identiteit niet correct. Controleer gh auth."; exit 1; }
+# Controleer identiteit voor de zekerheid: verifieer dat de SSH-host van de
+# vault-remote (github-athena) ons als het factory-account herkent voordat we pushen.
+REMOTE_HOST=$(git remote get-url origin | sed -E 's|^[^@]+@([^:]+):.*|\1|')
+EXPECTED_ACCOUNT="athenacmsfactory"
+ACTUAL_ACCOUNT=$(ssh -T "git@$REMOTE_HOST" 2>&1 | sed -nE 's/^Hi ([^!]+)!.*/\1/p')
+if [ "$ACTUAL_ACCOUNT" != "$EXPECTED_ACCOUNT" ]; then
+    echo "❌ SSH-identiteit onjuist: verwacht '$EXPECTED_ACCOUNT' via $REMOTE_HOST, kreeg '${ACTUAL_ACCOUNT:-onbekend}'. Controleer gh auth."
+    exit 1
+fi
 
 git add .
 git commit -m "publish($SITE_NAME): ${MESSAGE:-'Final release'}"
